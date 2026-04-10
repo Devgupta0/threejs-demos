@@ -1,0 +1,169 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abandoned Research Facility</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Abandoned Research Facility</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, mesh, fish, jellyfish;
+        let rotateX = 0, rotateY = 0;
+        let dragStartX, dragStartY;
+        let isDragging = false;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshPhongMaterial({ color: 0x333333 });
+            mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            // Add research facility
+            const facilityGeometry = new THREE.BoxGeometry(5, 5, 5);
+            const facilityMaterial = new THREE.MeshPhongMaterial({ color: 0x444444 });
+            const facility = new THREE.Mesh(facilityGeometry, facilityMaterial);
+            facility.position.z = -10;
+            scene.add(facility);
+
+            // Add old computer screens
+            const screenGeometry = new THREE.PlaneGeometry(1, 1);
+            const screenMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            for (let i = 0; i < 10; i++) {
+                const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+                screen.position.x = Math.random() * 10 - 5;
+                screen.position.y = Math.random() * 10 - 5;
+                screen.position.z = Math.random() * 10 - 5;
+                scene.add(screen);
+            }
+
+            // Add flickering fluorescent lights
+            const lightGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const lightMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            for (let i = 0; i < 10; i++) {
+                const light = new THREE.Mesh(lightGeometry, lightMaterial);
+                light.position.x = Math.random() * 10 - 5;
+                light.position.y = Math.random() * 10 - 5;
+                light.position.z = Math.random() * 10 - 5;
+                scene.add(light);
+            }
+
+            // Add bioluminescent fish
+            const fishGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const fishMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+            fish = [];
+            for (let i = 0; i < 100; i++) {
+                const fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+                fishMesh.position.x = Math.random() * 10 - 5;
+                fishMesh.position.y = Math.random() * 10 - 5;
+                fishMesh.position.z = Math.random() * 10 - 5;
+                fish.push(fishMesh);
+                scene.add(fishMesh);
+            }
+
+            // Add soft, blue-green glowing jellyfish
+            const jellyfishGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const jellyfishMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+            jellyfish = [];
+            for (let i = 0; i < 10; i++) {
+                const jellyfishMesh = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+                jellyfishMesh.position.x = Math.random() * 10 - 5;
+                jellyfishMesh.position.y = Math.random() * 10 - 5;
+                jellyfishMesh.position.z = Math.random() * 10 - 5;
+                jellyfish.push(jellyfishMesh);
+                scene.add(jellyfishMesh);
+            }
+
+            // Add dense, dark oceanic fog
+            scene.fog = new THREE.Fog(0x000000, 1, 10);
+
+            // Add ambient light
+            const ambientLight = new THREE.AmbientLight(0x111111);
+            scene.add(ambientLight);
+
+            // Add point light
+            const pointLight = new THREE.PointLight(0xffffff, 1, 10);
+            pointLight.position.z = 5;
+            scene.add(pointLight);
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update fish positions
+            for (let i = 0; i < fish.length; i++) {
+                fish[i].position.x += Math.random() * 0.01 - 0.005;
+                fish[i].position.y += Math.random() * 0.01 - 0.005;
+                fish[i].position.z += Math.random() * 0.01 - 0.005;
+            }
+
+            // Update jellyfish positions
+            for (let i = 0; i < jellyfish.length; i++) {
+                jellyfish[i].position.x += Math.random() * 0.01 - 0.005;
+                jellyfish[i].position.y += Math.random() * 0.01 - 0.005;
+                jellyfish[i].position.z += Math.random() * 0.01 - 0.005;
+            }
+
+            camera.rotation.x = rotateX;
+            camera.rotation.y = rotateY;
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            isDragging = true;
+            dragStartX = event.clientX;
+            dragStartY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (isDragging) {
+                rotateX += (event.clientY - dragStartY) * 0.01;
+                rotateY += (event.clientX - dragStartX) * 0.01;
+                dragStartX = event.clientX;
+                dragStartY = event.clientY;
+            }
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+        }
+    </script>
+</body>
+</html>
+```
