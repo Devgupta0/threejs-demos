@@ -1,0 +1,161 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Temple</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Mystical Underwater Temple</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, raycaster, mouse, intersected;
+        let fish = [], jellyfish = [], temple;
+        let rotationX = 0, rotationY = 0;
+        let dragStartX, dragStartY;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x03055B);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            let geometry = new THREE.SphereGeometry(0.1, 32, 32);
+            let material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            for (let i = 0; i < 50; i++) {
+                let mesh = new THREE.Mesh(geometry, material);
+                mesh.position.x = Math.random() * 2 - 1;
+                mesh.position.y = Math.random() * 2 - 1;
+                mesh.position.z = Math.random() * 2 - 1;
+                fish.push(mesh);
+                scene.add(mesh);
+            }
+
+            geometry = new THREE.SphereGeometry(0.5, 32, 32);
+            material = new THREE.MeshBasicMaterial({ color: 0x66CCFF });
+            for (let i = 0; i < 10; i++) {
+                let mesh = new THREE.Mesh(geometry, material);
+                mesh.position.x = Math.random() * 4 - 2;
+                mesh.position.y = Math.random() * 4 - 2;
+                mesh.position.z = Math.random() * 4 - 2;
+                jellyfish.push(mesh);
+                scene.add(mesh);
+            }
+
+            geometry = new THREE.BoxGeometry(2, 2, 2);
+            material = new THREE.MeshPhongMaterial({ color: 0x775533, specular: 0x333333, shininess: 10 });
+            temple = new THREE.Mesh(geometry, material);
+            temple.position.z = -2;
+            scene.add(temple);
+
+            let light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(0, 0, 1);
+            scene.add(light);
+
+            let ambientLight = new THREE.AmbientLight(0x444444, 0.5);
+            scene.add(ambientLight);
+
+            document.addEventListener('mousedown', onDocumentMouseDown, false);
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+            document.addEventListener('mouseup', onDocumentMouseUp, false);
+            document.addEventListener('touchstart', onDocumentTouchStart, false);
+            document.addEventListener('touchmove', onDocumentTouchMove, false);
+        }
+
+        function onDocumentMouseDown(event) {
+            event.preventDefault();
+            dragStartX = event.clientX;
+            dragStartY = event.clientY;
+        }
+
+        function onDocumentMouseMove(event) {
+            event.preventDefault();
+            if (dragStartX !== undefined && dragStartY !== undefined) {
+                rotationX += (event.clientY - dragStartY) * 0.01;
+                rotationY += (event.clientX - dragStartX) * 0.01;
+                dragStartX = event.clientX;
+                dragStartY = event.clientY;
+            }
+        }
+
+        function onDocumentMouseUp(event) {
+            event.preventDefault();
+            dragStartX = undefined;
+            dragStartY = undefined;
+        }
+
+        function onDocumentTouchStart(event) {
+            event.preventDefault();
+            dragStartX = event.touches[0].clientX;
+            dragStartY = event.touches[0].clientY;
+        }
+
+        function onDocumentTouchMove(event) {
+            event.preventDefault();
+            if (dragStartX !== undefined && dragStartY !== undefined) {
+                rotationX += (event.touches[0].clientY - dragStartY) * 0.01;
+                rotationY += (event.touches[0].clientX - dragStartX) * 0.01;
+                dragStartX = event.touches[0].clientX;
+                dragStartY = event.touches[0].clientY;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            camera.position.x = Math.sin(rotationY) * 5;
+            camera.position.z = Math.cos(rotationY) * 5;
+            camera.position.y = Math.sin(rotationX) * 2;
+            camera.lookAt(0, 0, 0);
+
+            for (let i = 0; i < fish.length; i++) {
+                fish[i].position.x += Math.random() * 0.01 - 0.005;
+                fish[i].position.y += Math.random() * 0.01 - 0.005;
+                fish[i].position.z += Math.random() * 0.01 - 0.005;
+                if (Math.abs(fish[i].position.x) > 5) fish[i].position.x = -fish[i].position.x;
+                if (Math.abs(fish[i].position.y) > 5) fish[i].position.y = -fish[i].position.y;
+                if (Math.abs(fish[i].position.z) > 5) fish[i].position.z = -fish[i].position.z;
+            }
+
+            for (let i = 0; i < jellyfish.length; i++) {
+                jellyfish[i].position.x += Math.random() * 0.005 - 0.0025;
+                jellyfish[i].position.y += Math.random() * 0.005 - 0.0025;
+                jellyfish[i].position.z += Math.random() * 0.005 - 0.0025;
+                if (Math.abs(jellyfish[i].position.x) > 5) jellyfish[i].position.x = -jellyfish[i].position.x;
+                if (Math.abs(jellyfish[i].position.y) > 5) jellyfish[i].position.y = -jellyfish[i].position.y;
+                if (Math.abs(jellyfish[i].position.z) > 5) jellyfish[i].position.z = -jellyfish[i].position.z;
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
