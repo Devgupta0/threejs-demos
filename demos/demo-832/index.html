@@ -1,0 +1,137 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Jellyfish Reef</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #scene-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-title">Neon Jellyfish Reef</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish = [], plants = [], seaFloor;
+        let drag = false, prevX, prevY;
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.domElement.style.width = '100vw';
+            renderer.domElement.style.height = '100vh';
+            document.body.appendChild(renderer.domElement);
+
+            let ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            let pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            seaFloor = new THREE.Mesh(
+                new THREE.PlaneGeometry(100, 100),
+                new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(0.6, 0.5, 0.5),
+                    side: THREE.DoubleSide
+                })
+            );
+            seaFloor.rotation.x = -Math.PI / 2;
+            seaFloor.position.z = -5;
+            scene.add(seaFloor);
+
+            for (let i = 0; i < 20; i++) {
+                let jellyfishGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+                let jellyfishMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(Math.random(), 1, 0.5)
+                });
+                let jellyfishMesh = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+                jellyfishMesh.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 5);
+                scene.add(jellyfishMesh);
+                jellyfish.push(jellyfishMesh);
+            }
+
+            for (let i = 0; i < 50; i++) {
+                let plantGeometry = new THREE.ConeGeometry(0.1, 1, 32);
+                let plantMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color().setHSL(Math.random(), 1, 0.5)
+                });
+                let plantMesh = new THREE.Mesh(plantGeometry, plantMaterial);
+                plantMesh.position.set(Math.random() * 10 - 5, -1, Math.random() * 10 - 5);
+                plantMesh.rotation.x = Math.random() * Math.PI;
+                scene.add(plantMesh);
+                plants.push(plantMesh);
+            }
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            jellyfish.forEach((jellyfish, index) => {
+                jellyfish.position.z = Math.sin(Date.now() * 0.01 + index) * 2 - 5;
+                jellyfish.position.x = Math.cos(Date.now() * 0.01 + index) * 2;
+            });
+
+            plants.forEach((plant, index) => {
+                plant.position.x = Math.cos(Date.now() * 0.01 + index) * 0.1;
+                plant.position.z = Math.sin(Date.now() * 0.01 + index) * 0.1;
+            });
+
+            seaFloor.material.color.setHSL(0.6 + Math.sin(Date.now() * 0.001) * 0.1, 0.5, 0.5);
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            drag = true;
+            prevX = event.clientX;
+            prevY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (drag) {
+                let dx = event.clientX - prevX;
+                let dy = event.clientY - prevY;
+                camera.rotation.y += dx * 0.01;
+                camera.rotation.x += dy * 0.01;
+                prevX = event.clientX;
+                prevY = event.clientY;
+            }
+        }
+
+        function onMouseUp() {
+            drag = false;
+        }
+    </script>
+</body>
+</html>
+```
