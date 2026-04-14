@@ -1,0 +1,119 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater City</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater City</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        let jellyfishCity;
+        let fish = [];
+
+        function createJellyfishCity() {
+            let geometry = new THREE.SphereGeometry(1, 64, 64);
+            let material = new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+            jellyfishCity = new THREE.Mesh(geometry, material);
+            jellyfishCity.scale.set(10, 10, 10);
+            jellyfishCity.position.set(0, 0, 0);
+            scene.add(jellyfishCity);
+
+            for (let i = 0; i < 100; i++) {
+                let tentacleGeometry = new THREE.CylinderGeometry(0.1, 0.1, 5, 64);
+                let tentacleMaterial = new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+                let tentacle = new THREE.Mesh(tentacleGeometry, tentacleMaterial);
+                tentacle.rotation.x = Math.random() * Math.PI;
+                tentacle.rotation.z = Math.random() * Math.PI;
+                tentacle.position.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+                jellyfishCity.add(tentacle);
+            }
+        }
+
+        function createFish() {
+            for (let i = 0; i < 100; i++) {
+                let geometry = new THREE.SphereGeometry(0.1, 32, 32);
+                let material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                let fishMesh = new THREE.Mesh(geometry, material);
+                fishMesh.position.set(Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 20 - 10);
+                fishMesh.velocity = new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+                scene.add(fishMesh);
+                fish.push(fishMesh);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (jellyfishCity) {
+                jellyfishCity.rotation.x += 0.01;
+                jellyfishCity.rotation.y += 0.01;
+                for (let i = 0; i < jellyfishCity.children.length; i++) {
+                    jellyfishCity.children[i].rotation.x += 0.01;
+                    jellyfishCity.children[i].rotation.z += 0.01;
+                }
+            }
+
+            for (let i = 0; i < fish.length; i++) {
+                fish[i].position.add(fish[i].velocity);
+                if (fish[i].position.x > 10 || fish[i].position.x < -10) {
+                    fish[i].velocity.x *= -1;
+                }
+                if (fish[i].position.y > 10 || fish[i].position.y < -10) {
+                    fish[i].velocity.y *= -1;
+                }
+                if (fish[i].position.z > 10 || fish[i].position.z < -10) {
+                    fish[i].velocity.z *= -1;
+                }
+            }
+
+            camera.rotation.x += (mouseY - camera.rotation.x) * 0.01;
+            camera.rotation.y += (mouseX - camera.rotation.y) * 0.01;
+
+            renderer.render(scene, camera);
+        }
+
+        let mouseX = 0;
+        let mouseY = 0;
+        document.addEventListener('mousemove', (event) => {
+            mouseX = event.clientX / window.innerWidth * 2 - 1;
+            mouseY = event.clientY / window.innerHeight * 2 - 1;
+        });
+
+        camera.position.set(0, 0, 20);
+        let ambientLight = new THREE.AmbientLight(0x444444);
+        scene.add(ambientLight);
+        let pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(0, 0, 20);
+        scene.add(pointLight);
+
+        createJellyfishCity();
+        createFish();
+        animate();
+    </script>
+</body>
+</html>
+```
