@@ -1,0 +1,119 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Nebula Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, mesh, stars = [], starGeometry, starMaterial;
+        let mouseDown = false, mousePos = { x: 0, y: 0 }, rotation = { x: 0, y: 0 };
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        starGeometry = new THREE.BufferGeometry();
+        const starVertices = [];
+        for (let i = 0; i < 2000; i++) {
+            starVertices.push(Math.random() * 200 - 100, Math.random() * 200 - 100, Math.random() * 200 - 100);
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+
+        starMaterial = new THREE.PointsMaterial({
+            size: 0.5,
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.5
+        });
+
+        for (let i = 0; i < 2000; i++) {
+            const star = new THREE.Points(starGeometry, starMaterial);
+            star.position.x = Math.random() * 400 - 200;
+            star.position.y = Math.random() * 400 - 200;
+            star.position.z = Math.random() * 400 - 200;
+            star.scale.set(0.1, 0.1, 0.1);
+            scene.add(star);
+            stars.push(star);
+        }
+
+        const nebulaGeometry = new THREE.SphereGeometry(5, 60, 60);
+        const nebulaMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.5
+        });
+        const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
+        scene.add(nebula);
+
+        const ambientLight = new THREE.AmbientLight(0x333333);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(0, 0, 5);
+        scene.add(pointLight);
+
+        document.addEventListener('mousedown', (e) => {
+            mouseDown = true;
+            mousePos = { x: e.clientX, y: e.clientY };
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (mouseDown) {
+                rotation.x += (e.clientY - mousePos.y) * 0.01;
+                rotation.y += (e.clientX - mousePos.x) * 0.01;
+                mousePos = { x: e.clientX, y: e.clientY };
+            }
+        });
+        document.addEventListener('mouseup', () => {
+            mouseDown = false;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            camera.rotation.x = rotation.x;
+            camera.rotation.y = rotation.y;
+            for (let i = 0; i < stars.length; i++) {
+                stars[i].rotation.x += 0.001;
+                stars[i].rotation.y += 0.001;
+            }
+            nebula.rotation.x += 0.001;
+            nebula.rotation.y += 0.001;
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
+```
