@@ -1,0 +1,139 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystic Canyon</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Mystic Canyon</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, mesh, moon, mushrooms = [], crystals = [];
+        let drag = false, prevX, prevY;
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Canyon
+            let geometry = new THREE.PlaneGeometry(100, 100, 100, 100);
+            let material = new THREE.MeshBasicMaterial({
+                color: 0x7a288a,
+                transparent: true,
+                opacity: 0.5
+            });
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.rotation.x = -Math.PI / 2;
+            scene.add(mesh);
+
+            // Moon
+            moon = new THREE.Mesh(new THREE.SphereGeometry(5, 60, 60), new THREE.MeshBasicMaterial({
+                color: 0xffff00
+            }));
+            moon.position.z = -50;
+            moon.position.y = 10;
+            scene.add(moon);
+
+            // Mushrooms
+            for (let i = 0; i < 10; i++) {
+                let mushroom = new THREE.Mesh(new THREE.SphereGeometry(Math.random() * 2 + 1, 60, 60), new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 50%)`)
+                }));
+                mushroom.position.x = Math.random() * 50 - 25;
+                mushroom.position.z = Math.random() * 50 - 25;
+                mushrooms.push(mushroom);
+                scene.add(mushroom);
+            }
+
+            // Crystals
+            for (let i = 0; i < 10; i++) {
+                let geometry = new THREE.BoxGeometry(Math.random() * 5 + 2, Math.random() * 10 + 5, Math.random() * 5 + 2);
+                let material = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 50%)`)
+                });
+                let crystal = new THREE.Mesh(geometry, material);
+                crystal.position.x = Math.random() * 50 - 25;
+                crystal.position.z = Math.random() * 50 - 25;
+                crystals.push(crystal);
+                scene.add(crystal);
+            }
+
+            // Stars
+            for (let i = 0; i < 100; i++) {
+                let star = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), new THREE.MeshBasicMaterial({
+                    color: 0xffffff
+                }));
+                star.position.x = Math.random() * 100 - 50;
+                star.position.y = Math.random() * 100 - 50;
+                star.position.z = Math.random() * 100 - 50;
+                scene.add(star);
+            }
+
+            camera.position.z = 20;
+            camera.position.y = 10;
+
+            document.addEventListener('mousedown', (e) => {
+                drag = true;
+                prevX = e.clientX;
+                prevY = e.clientY;
+            });
+
+            document.addEventListener('mouseup', () => {
+                drag = false;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (drag) {
+                    camera.rotation.x += (e.clientY - prevY) * 0.01;
+                    camera.rotation.y += (e.clientX - prevX) * 0.01;
+                    prevX = e.clientX;
+                    prevY = e.clientY;
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            mesh.position.y = Math.sin(Date.now() * 0.001) * 2;
+
+            for (let i = 0; i < mushrooms.length; i++) {
+                mushrooms[i].rotation.x += 0.01;
+                mushrooms[i].rotation.y += 0.01;
+            }
+
+            for (let i = 0; i < crystals.length; i++) {
+                crystals[i].rotation.x += 0.01;
+                crystals[i].rotation.y += 0.01;
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
