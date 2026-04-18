@@ -1,0 +1,148 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Metropolis</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Metropolis</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, fish, jellyfish, aurora;
+        let raycaster, mouse = { x: 0, y: 0 }, drag = false;
+        let rotation = { x: 0, y: 0 };
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            camera.position.z = 5;
+
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            fish = [];
+            for (let i = 0; i < 100; i++) {
+                const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+                scene.add(mesh);
+                fish.push(mesh);
+            }
+
+            jellyfish = [];
+            for (let i = 0; i < 10; i++) {
+                const geometry = new THREE.SphereGeometry(1, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ color: 0x6644ff });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+                scene.add(mesh);
+                jellyfish.push(mesh);
+            }
+
+            aurora = new THREE.Mesh(
+                new THREE.PlaneGeometry(10, 10),
+                new THREE.MeshBasicMaterial({ color: 0xff66ff, transparent: true, opacity: 0.5 })
+            );
+            aurora.position.set(0, 0, 5);
+            scene.add(aurora);
+
+            raycaster = new THREE.Raycaster();
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('touchmove', onTouchMove);
+            document.addEventListener('touchstart', onTouchStart);
+            document.addEventListener('touchend', onTouchEnd);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            aurora.material.color.setHSL(Math.sin(Date.now() * 0.001) * 0.5 + 0.5, 1, 0.5);
+            aurora.position.y = Math.sin(Date.now() * 0.01) * 2;
+
+            for (let i = 0; i < fish.length; i++) {
+                fish[i].position.x += Math.random() * 0.01 - 0.005;
+                fish[i].position.y += Math.random() * 0.01 - 0.005;
+                fish[i].position.z += Math.random() * 0.01 - 0.005;
+            }
+
+            for (let i = 0; i < jellyfish.length; i++) {
+                jellyfish[i].position.x += Math.random() * 0.001 - 0.0005;
+                jellyfish[i].position.y += Math.random() * 0.001 - 0.0005;
+                jellyfish[i].position.z += Math.random() * 0.001 - 0.0005;
+            }
+
+            if (drag) {
+                rotation.x += (mouse.y - event.clientY) * 0.01;
+                rotation.y += (mouse.x - event.clientX) * 0.01;
+                mouse.x = event.clientX;
+                mouse.y = event.clientY;
+            }
+
+            camera.rotation.x = rotation.x;
+            camera.rotation.y = rotation.y;
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseMove(event) {
+            mouse.x = event.clientX;
+            mouse.y = event.clientY;
+        }
+
+        function onMouseDown(event) {
+            drag = true;
+        }
+
+        function onMouseUp(event) {
+            drag = false;
+        }
+
+        function onTouchMove(event) {
+            mouse.x = event.touches[0].clientX;
+            mouse.y = event.touches[0].clientY;
+        }
+
+        function onTouchStart(event) {
+            drag = true;
+        }
+
+        function onTouchEnd(event) {
+            drag = false;
+        }
+    </script>
+</body>
+</html>
+```
