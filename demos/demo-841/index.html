@@ -1,0 +1,153 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Garden</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: monospace;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Garden</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish, seaweed, fish;
+        let dragStart = null;
+        let dragEnd = null;
+        let rotateSpeed = 0.01;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            let waterGeometry = new THREE.PlaneGeometry(100, 100);
+            let waterMaterial = new THREE.MeshPhongMaterial({
+                color: 0x1111ff,
+                transparent: true,
+                opacity: 0.5
+            });
+            let water = new THREE.Mesh(waterGeometry, waterMaterial);
+            water.rotation.x = -Math.PI / 2;
+            scene.add(water);
+
+            for (let i = 0; i < 10; i++) {
+                let jellyfishGeometry = new THREE.SphereGeometry(1, 32, 32);
+                let jellyfishMaterial = new THREE.MeshPhongMaterial({
+                    color: 0xffff00,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+                jellyfish.position.x = Math.random() * 20 - 10;
+                jellyfish.position.z = Math.random() * 20 - 10;
+                scene.add(jellyfish);
+            }
+
+            for (let i = 0; i < 10; i++) {
+                let seaweedGeometry = new THREE.CylinderGeometry(0.1, 0.1, 5, 32);
+                let seaweedMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x00ff00,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                seaweed = new THREE.Mesh(seaweedGeometry, seaweedMaterial);
+                seaweed.position.x = Math.random() * 20 - 10;
+                seaweed.position.z = Math.random() * 20 - 10;
+                seaweed.rotation.x = Math.random() * Math.PI;
+                scene.add(seaweed);
+            }
+
+            for (let i = 0; i < 20; i++) {
+                let fishGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+                let fishMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x00ffff,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                fish = new THREE.Mesh(fishGeometry, fishMaterial);
+                fish.position.x = Math.random() * 20 - 10;
+                fish.position.z = Math.random() * 20 - 10;
+                scene.add(fish);
+            }
+
+            let ambientLight = new THREE.AmbientLight(0x1111ff, 0.5);
+            scene.add(ambientLight);
+
+            let directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(10, 10, 10);
+            scene.add(directionalLight);
+
+            camera.position.z = 20;
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (dragStart && dragEnd) {
+                let dx = dragEnd.x - dragStart.x;
+                let dy = dragEnd.y - dragStart.y;
+                camera.rotation.x += dy * rotateSpeed;
+                camera.rotation.y += dx * rotateSpeed;
+                dragStart = null;
+                dragEnd = null;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            dragStart = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
+
+        function onMouseMove(event) {
+            if (dragStart) {
+                dragEnd = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+            }
+        }
+
+        function onMouseUp(event) {
+            if (dragStart) {
+                dragEnd = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
+```
