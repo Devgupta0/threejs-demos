@@ -1,0 +1,110 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Temple</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Temple</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, tempX, tempY;
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            camera.position.z = 5;
+
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshPhongMaterial({ color: 0x444444 });
+            const temple = new THREE.Mesh(geometry, material);
+            temple.position.set(0, 0, 0);
+            scene.add(temple);
+
+            const seaweedGeometry = new THREE.PlaneGeometry(1, 1);
+            const seaweedMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+            for (let i = 0; i < 100; i++) {
+                const seaweed = new THREE.Mesh(seaweedGeometry, seaweedMaterial);
+                seaweed.position.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+                seaweed.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                scene.add(seaweed);
+            }
+
+            const fishGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const fishMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+            for (let i = 0; i < 100; i++) {
+                const fish = new THREE.Mesh(fishGeometry, fishMaterial);
+                fish.position.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+                scene.add(fish);
+            }
+
+            const light = new THREE.PointLight(0xffaa00, 1, 10);
+            light.position.set(0, 0, 0);
+            scene.add(light);
+
+            const ambientLight = new THREE.AmbientLight(0x111111);
+            scene.add(ambientLight);
+
+            window.addEventListener('resize', onWindowResize, false);
+            window.addEventListener('mousedown', onMouseDown, false);
+            window.addEventListener('mousemove', onMouseMove, false);
+            window.addEventListener('mouseup', onMouseUp, false);
+
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onMouseDown(event) {
+            tempX = event.clientX;
+            tempY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (tempX && tempY) {
+                camera.rotation.x += (event.clientY - tempY) * 0.01;
+                camera.rotation.y += (event.clientX - tempX) * 0.01;
+                tempX = event.clientX;
+                tempY = event.clientY;
+            }
+        }
+
+        function onMouseUp() {
+            tempX = null;
+            tempY = null;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
+```
