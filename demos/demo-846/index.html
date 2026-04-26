@@ -1,0 +1,119 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #scene-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-title">Underwater Metropolis</div>
+    <canvas id="canvas" width="100%" height="100%"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, controls;
+        let fish = [];
+        let jellyfish = [];
+        let fog;
+        let clock;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            scene.fog = new THREE.Fog(0x000000, 1, 2000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+            camera.position.z = 500;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            clock = new THREE.Clock();
+
+            let geometry = new THREE.SphereGeometry(50, 32, 32);
+            let material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            for (let i = 0; i < 10; i++) {
+                let mesh = new THREE.Mesh(geometry, material);
+                mesh.position.x = Math.random() * 1000 - 500;
+                mesh.position.y = Math.random() * 1000 - 500;
+                mesh.position.z = Math.random() * 1000 - 500;
+                jellyfish.push(mesh);
+                scene.add(mesh);
+            }
+
+            geometry = new THREE.SphereGeometry(10, 16, 16);
+            material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            for (let i = 0; i < 100; i++) {
+                let mesh = new THREE.Mesh(geometry, material);
+                mesh.position.x = Math.random() * 1000 - 500;
+                mesh.position.y = Math.random() * 1000 - 500;
+                mesh.position.z = Math.random() * 1000 - 500;
+                fish.push(mesh);
+                scene.add(mesh);
+            }
+
+            let ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            let pointLight = new THREE.PointLight(0xff0000, 1, 1000);
+            pointLight.position.set(0, 0, 0);
+            scene.add(pointLight);
+
+            let pointLight2 = new THREE.PointLight(0x00ff00, 1, 1000);
+            pointLight2.position.set(500, 0, 0);
+            scene.add(pointLight2);
+
+            let pointLight3 = new THREE.PointLight(0x0000ff, 1, 1000);
+            pointLight3.position.set(-500, 0, 0);
+            scene.add(pointLight3);
+
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = event.clientX - window.innerWidth / 2;
+            mouseY = event.clientY - window.innerHeight / 2;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            camera.rotation.x += mouseY * 0.01;
+            camera.rotation.y += mouseX * 0.01;
+
+            let delta = clock.getDelta();
+            for (let i = 0; i < fish.length; i++) {
+                fish[i].position.x += Math.random() * 2 - 1;
+                fish[i].position.y += Math.random() * 2 - 1;
+                fish[i].position.z += Math.random() * 2 - 1;
+            }
+
+            for (let i = 0; i < jellyfish.length; i++) {
+                jellyfish[i].position.x += Math.sin(Date.now() * 0.001 + i) * 5;
+                jellyfish[i].position.y += Math.cos(Date.now() * 0.001 + i) * 5;
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
