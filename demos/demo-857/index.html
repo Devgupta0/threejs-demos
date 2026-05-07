@@ -1,0 +1,95 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Surreal Mushroom Forest</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Surreal Mushroom Forest</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, mice = { x: 0, y: 0 }, rot = { x: 0, y: 0 };
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            camera.position.z = 5;
+            let geometry = new THREE.PlaneGeometry(100, 100);
+            let material = new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.5 });
+            let lake = new THREE.Mesh(geometry, material);
+            lake.rotation.x = -Math.PI / 2;
+            lake.position.y = -5;
+            scene.add(lake);
+            for (let i = 0; i < 100; i++) {
+                let x = Math.random() * 20 - 10;
+                let z = Math.random() * 20 - 10;
+                let height = Math.random() * 5 + 2;
+                let geometry = new THREE.CylinderGeometry(0.1, 0.5, height, 32);
+                let material = new THREE.MeshPhongMaterial({
+                    color: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 50%)`),
+                    specular: 0xffffff,
+                    shininess: 100
+                });
+                let mushroom = new THREE.Mesh(geometry, material);
+                mushroom.position.set(x, height / 2 - 5, z);
+                scene.add(mushroom);
+            }
+            let light = new THREE.PointLight(0xffffff, 1, 100);
+            light.position.set(0, 10, 0);
+            scene.add(light);
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mouseup', onMouseUp);
+            animate();
+        }
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        function onMouseMove(event) {
+            if (event.buttons === 1) {
+                rot.x += (event.movementY * 0.01);
+                rot.y += (event.movementX * 0.01);
+            }
+        }
+        function onMouseDown() {
+        }
+        function onMouseUp() {
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            camera.rotation.x = rot.x;
+            camera.rotation.y = rot.y;
+            let time = performance.now() * 0.001;
+            for (let child of scene.children) {
+                if (child.isMesh && child.geometry.type === 'CylinderGeometry') {
+                    child.material.color.setHSL(time * 0.1 + Math.random() * 0.1, 1, 0.5);
+                }
+            }
+            renderer.render(scene, camera);
+        }
+        init();
+    </script>
+</body>
+</html>
+```
