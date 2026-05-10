@@ -1,0 +1,193 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Abandoned Research Facility</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      overflow: hidden;
+    }
+    #title {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-family: monospace;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="title">Abandoned Research Facility</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, fish, seaCreatures, fog;
+    let dragStart = null;
+    let dragEnd = null;
+    let rotateStart = null;
+    let rotateEnd = null;
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer({
+        antialias: true
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Add event listeners for mouse drag
+      document.addEventListener('mousedown', (event) => {
+        dragStart = {
+          x: event.clientX,
+          y: event.clientY
+        };
+        rotateStart = {
+          x: camera.rotation.x,
+          y: camera.rotation.y
+        };
+      });
+      document.addEventListener('mousemove', (event) => {
+        if (dragStart) {
+          dragEnd = {
+            x: event.clientX,
+            y: event.clientY
+          };
+          rotateEnd = {
+            x: rotateStart.x + (dragEnd.y - dragStart.y) * 0.01,
+            y: rotateStart.y + (dragEnd.x - dragStart.x) * 0.01
+          };
+          camera.rotation.x = rotateEnd.x;
+          camera.rotation.y = rotateEnd.y;
+        }
+      });
+      document.addEventListener('mouseup', () => {
+        dragStart = null;
+        dragEnd = null;
+        rotateStart = null;
+        rotateEnd = null;
+      });
+
+      // Create fog
+      fog = new THREE.Fog(0x000000, 1, 500);
+      scene.fog = fog;
+
+      // Create research facility
+      let facilityGeometry = new THREE.BoxGeometry(100, 50, 100);
+      let facilityMaterial = new THREE.MeshPhongMaterial({
+        color: 0x444444,
+        specular: 0x111111,
+        shininess: 10
+      });
+      let facility = new THREE.Mesh(facilityGeometry, facilityMaterial);
+      facility.position.set(0, -50, 0);
+      scene.add(facility);
+
+      // Create debris
+      for (let i = 0; i < 10; i++) {
+        let debrisGeometry = new THREE.BoxGeometry(Math.random() * 20 + 10, Math.random() * 10 + 5, Math.random() * 20 + 10);
+        let debrisMaterial = new THREE.MeshPhongMaterial({
+          color: 0x666666,
+          specular: 0x111111,
+          shininess: 10
+        });
+        let debris = new THREE.Mesh(debrisGeometry, debrisMaterial);
+        debris.position.set(Math.random() * 200 - 100, Math.random() * 50 - 25, Math.random() * 200 - 100);
+        scene.add(debris);
+      }
+
+      // Create sea creatures
+      seaCreatures = [];
+      for (let i = 0; i < 50; i++) {
+        let creatureGeometry = new THREE.SphereGeometry(Math.random() * 5 + 2, 16, 16);
+        let creatureMaterial = new THREE.MeshPhongMaterial({
+          color: 0x00ff00,
+          emissive: 0x00ff00,
+          specular: 0x111111,
+          shininess: 10
+        });
+        let creature = new THREE.Mesh(creatureGeometry, creatureMaterial);
+        creature.position.set(Math.random() * 200 - 100, Math.random() * 50 - 25, Math.random() * 200 - 100);
+        scene.add(creature);
+        seaCreatures.push(creature);
+      }
+
+      // Create fish
+      fish = [];
+      for (let i = 0; i < 50; i++) {
+        let fishGeometry = new THREE.TetrahedronGeometry(5, 0);
+        let fishMaterial = new THREE.MeshPhongMaterial({
+          color: 0x0000ff,
+          specular: 0x111111,
+          shininess: 10
+        });
+        let fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+        fishMesh.position.set(Math.random() * 200 - 100, Math.random() * 50 - 25, Math.random() * 200 - 100);
+        scene.add(fishMesh);
+        fish.push({
+          mesh: fishMesh,
+          velocity: {
+            x: Math.random() * 2 - 1,
+            y: Math.random() * 2 - 1,
+            z: Math.random() * 2 - 1
+          }
+        });
+      }
+
+      // Create sun
+      let sunGeometry = new THREE.SphereGeometry(50, 16, 16);
+      let sunMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff9900
+      });
+      let sun = new THREE.Mesh(sunGeometry, sunMaterial);
+      sun.position.set(200, 200, 200);
+      scene.add(sun);
+
+      // Create ambient light
+      let ambientLight = new THREE.AmbientLight(0x111111);
+      scene.add(ambientLight);
+
+      // Create point light
+      let pointLight = new THREE.PointLight(0xffffff, 1, 500);
+      pointLight.position.set(200, 200, 200);
+      scene.add(pointLight);
+
+      camera.position.set(0, 0, 200);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Update fish positions
+      for (let i = 0; i < fish.length; i++) {
+        fish[i].mesh.position.x += fish[i].velocity.x;
+        fish[i].mesh.position.y += fish[i].velocity.y;
+        fish[i].mesh.position.z += fish[i].velocity.z;
+
+        if (fish[i].mesh.position.x > 100 || fish[i].mesh.position.x < -100) {
+          fish[i].velocity.x = -fish[i].velocity.x;
+        }
+        if (fish[i].mesh.position.y > 50 || fish[i].mesh.position.y < -50) {
+          fish[i].velocity.y = -fish[i].velocity.y;
+        }
+        if (fish[i].mesh.position.z > 100 || fish[i].mesh.position.z < -100) {
+          fish[i].velocity.z = -fish[i].velocity.z;
+        }
+      }
+
+      // Update sea creatures positions
+      for (let i = 0; i < seaCreatures.length; i++) {
+        seaCreatures[i].position.y += Math.sin(Date.now() * 0.01 + i) * 0.1;
+      }
+
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
+```
