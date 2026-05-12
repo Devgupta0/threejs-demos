@@ -1,0 +1,130 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Surreal Ocean</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      font-family: monospace;
+    }
+    #title {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="title">Surreal Ocean</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, jellyfish, school;
+    let dragStart = null;
+    let dragEnd = null;
+    let rotation = { x: 0, y: 0 };
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 5;
+
+      renderer = new THREE.WebGLRenderer({
+        antialias: true
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x000000);
+      document.body.appendChild(renderer.domElement);
+
+      const jellyfishGeometry = new THREE.SphereGeometry(2, 64, 64);
+      const jellyfishMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.5
+      });
+      jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+      jellyfish.position.z = 0;
+      scene.add(jellyfish);
+
+      school = [];
+      for (let i = 0; i < 100; i++) {
+        const fishGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+        const fishMaterial = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.5
+        });
+        const fish = new THREE.Mesh(fishGeometry, fishMaterial);
+        fish.position.x = Math.random() * 4 - 2;
+        fish.position.y = Math.random() * 4 - 2;
+        fish.position.z = Math.random() * 4 - 2;
+        school.push(fish);
+        scene.add(fish);
+      }
+
+      const ambientLight = new THREE.AmbientLight(0x444444);
+      scene.add(ambientLight);
+
+      const pointLight = new THREE.PointLight(0xffffff, 1, 10);
+      pointLight.position.z = 5;
+      scene.add(pointLight);
+
+      document.addEventListener('mousedown', (event) => {
+        dragStart = { x: event.clientX, y: event.clientY };
+      });
+      document.addEventListener('mousemove', (event) => {
+        if (dragStart) {
+          dragEnd = { x: event.clientX, y: event.clientY };
+          rotation.x += (dragEnd.y - dragStart.y) * 0.01;
+          rotation.y += (dragEnd.x - dragStart.x) * 0.01;
+          dragStart = dragEnd;
+        }
+      });
+      document.addEventListener('mouseup', () => {
+        dragStart = null;
+        dragEnd = null;
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      camera.rotation.x = rotation.x;
+      camera.rotation.y = rotation.y;
+
+      jellyfish.rotation.x += 0.01;
+      jellyfish.rotation.y += 0.01;
+
+      for (let i = 0; i < school.length; i++) {
+        school[i].position.x += Math.random() * 0.01 - 0.005;
+        school[i].position.y += Math.random() * 0.01 - 0.005;
+        school[i].position.z += Math.random() * 0.01 - 0.005;
+
+        if (school[i].position.x > 2) {
+          school[i].position.x = -2;
+        } else if (school[i].position.x < -2) {
+          school[i].position.x = 2;
+        }
+        if (school[i].position.y > 2) {
+          school[i].position.y = -2;
+        } else if (school[i].position.y < -2) {
+          school[i].position.y = 2;
+        }
+        if (school[i].position.z > 2) {
+          school[i].position.z = -2;
+        } else if (school[i].position.z < -2) {
+          school[i].position.z = 2;
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
+```
