@@ -1,0 +1,145 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal Tree Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+        #scene-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: monospace;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-title">Surreal Tree Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer;
+        let tree, fibers, stars;
+        let rotationX = 0, rotationY = 0;
+        let mouseX = 0, mouseY = 0;
+        let isDragging = false;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Tree
+            const treeGeometry = new THREE.SphereGeometry(1, 32, 32);
+            const treeMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.5
+            });
+            tree = new THREE.Mesh(treeGeometry, treeMaterial);
+            tree.position.set(0, 0, 0);
+            scene.add(tree);
+
+            // Fibers
+            const fiberGeometry = new THREE.TorusKnotGeometry(0.5, 0.2, 100, 20);
+            const fiberMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff69b4,
+                transparent: true,
+                opacity: 0.5
+            });
+            fibers = [];
+            for (let i = 0; i < 100; i++) {
+                const fiber = new THREE.Mesh(fiberGeometry, fiberMaterial);
+                fiber.position.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+                fiber.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                fibers.push(fiber);
+                scene.add(fiber);
+            }
+
+            // Stars
+            const starGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const starMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.5
+            });
+            stars = [];
+            for (let i = 0; i < 1000; i++) {
+                const star = new THREE.Mesh(starGeometry, starMaterial);
+                star.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+                stars.push(star);
+                scene.add(star);
+            }
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1, 10);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            camera.position.set(0, 0, 5);
+            camera.lookAt(0, 0, 0);
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            tree.rotation.x += 0.01;
+            tree.rotation.y += 0.01;
+            fibers.forEach(fiber => {
+                fiber.rotation.x += 0.01;
+                fiber.rotation.y += 0.01;
+            });
+            stars.forEach(star => {
+                star.position.z -= 0.01;
+                if (star.position.z < -5) {
+                    star.position.z = 5;
+                }
+            });
+
+            camera.rotation.x = rotationX;
+            camera.rotation.y = rotationY;
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            isDragging = true;
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (isDragging) {
+                rotationX += (event.clientY - mouseY) * 0.01;
+                rotationY += (event.clientX - mouseX) * 0.01;
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            }
+        }
+
+        function onMouseUp() {
+            isDragging = false;
+        }
+    </script>
+</body>
+</html>
+```
