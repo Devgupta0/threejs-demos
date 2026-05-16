@@ -1,0 +1,130 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystical Underwater Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+        #scene-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: monospace;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-title">Mystical Underwater Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, fish, coral, oceanFloor, jellyfish, ships;
+        let mouseX = 0, mouseY = 0;
+        let drag = false;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            for (let i = 0; i < 100; i++) {
+                fish = new THREE.Mesh(geometry, material);
+                fish.position.x = Math.random() * 10 - 5;
+                fish.position.y = Math.random() * 10 - 5;
+                fish.position.z = Math.random() * 10 - 5;
+                scene.add(fish);
+            }
+
+            const coralGeometry = new THREE.SphereGeometry(1, 16, 16);
+            const coralMaterial = new THREE.MeshBasicMaterial({ color: 0xff69b4 });
+            for (let i = 0; i < 10; i++) {
+                coral = new THREE.Mesh(coralGeometry, coralMaterial);
+                coral.position.x = Math.random() * 10 - 5;
+                coral.position.y = Math.random() * 10 - 5;
+                coral.position.z = Math.random() * 10 - 5;
+                scene.add(coral);
+            }
+
+            const oceanFloorGeometry = new THREE.PlaneGeometry(100, 100);
+            const oceanFloorMaterial = new THREE.MeshBasicMaterial({ color: 0x6495ed, side: THREE.DoubleSide });
+            oceanFloor = new THREE.Mesh(oceanFloorGeometry, oceanFloorMaterial);
+            oceanFloor.rotation.x = -Math.PI / 2;
+            oceanFloor.position.z = -10;
+            scene.add(oceanFloor);
+
+            const jellyfishGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+            const jellyfishMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+            for (let i = 0; i < 10; i++) {
+                jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+                jellyfish.position.x = Math.random() * 10 - 5;
+                jellyfish.position.y = Math.random() * 10 - 5;
+                jellyfish.position.z = Math.random() * 10 - 5;
+                scene.add(jellyfish);
+            }
+
+            const shipGeometry = new THREE.BoxGeometry(1, 1, 1);
+            const shipMaterial = new THREE.MeshBasicMaterial({ color: 0x999999 });
+            for (let i = 0; i < 5; i++) {
+                ships = new THREE.Mesh(shipGeometry, shipMaterial);
+                ships.position.x = Math.random() * 10 - 5;
+                ships.position.y = Math.random() * 10 - 5;
+                ships.position.z = Math.random() * 10 - 5;
+                scene.add(ships);
+            }
+
+            document.addEventListener('mousedown', (event) => {
+                drag = true;
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            });
+
+            document.addEventListener('mouseup', () => {
+                drag = false;
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if (drag) {
+                    camera.rotation.x += (event.clientY - mouseY) * 0.01;
+                    camera.rotation.y += (event.clientX - mouseX) * 0.01;
+                    mouseX = event.clientX;
+                    mouseY = event.clientY;
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            oceanFloor.material.color.setHSL(Math.sin(Date.now() * 0.001), 0.5, 0.5);
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
