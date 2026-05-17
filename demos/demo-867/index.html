@@ -1,0 +1,142 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal Landscape</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Surreal Landscape</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, tree, fireflies = [];
+        let mouse = { x: 0, y: 0 };
+        let rotation = { x: 0, y: 0 };
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Tree
+            const treeGeometry = new THREE.BufferGeometry();
+            const treePositions = [];
+            const treeColors = [];
+            const treeDepth = 10;
+            const treeBranches = 5;
+            const treeAngle = Math.PI / 4;
+            const treeLength = 10;
+            let currentPosition = [0, 0, 0];
+            let currentDirection = [0, 1, 0];
+            for (let i = 0; i < treeDepth; i++) {
+                treePositions.push(currentPosition[0], currentPosition[1], currentPosition[2]);
+                treeColors.push(1, 1, 0);
+                for (let j = 0; j < treeBranches; j++) {
+                    const branchDirection = [
+                        Math.random() * 2 - 1,
+                        Math.random() * 2 - 1,
+                        Math.random() * 2 - 1
+                    ];
+                    const branchPosition = [
+                        currentPosition[0] + branchDirection[0] * treeLength,
+                        currentPosition[1] + branchDirection[1] * treeLength,
+                        currentPosition[2] + branchDirection[2] * treeLength
+                    ];
+                    treePositions.push(branchPosition[0], branchPosition[1], branchPosition[2]);
+                    treeColors.push(1, 1, 0);
+                    currentPosition = branchPosition;
+                    currentDirection = branchDirection;
+                }
+                currentPosition = [0, 0, 0];
+                currentDirection = [0, 1, 0];
+            }
+            treeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(treePositions, 3));
+            treeGeometry.setAttribute('color', new THREE.Float32BufferAttribute(treeColors, 3));
+            tree = new THREE.Points(treeGeometry, new THREE.PointsMaterial({ vertexColors: true, size: 2 }));
+            scene.add(tree);
+
+            // Fireflies
+            for (let i = 0; i < 100; i++) {
+                const fireflyGeometry = new THREE.BufferGeometry();
+                const fireflyPositions = [Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50];
+                const fireflyColors = [Math.random(), Math.random(), Math.random()];
+                fireflyGeometry.setAttribute('position', new THREE.Float32BufferAttribute(fireflyPositions, 3));
+                fireflyGeometry.setAttribute('color', new THREE.Float32BufferAttribute(fireflyColors, 3));
+                const firefly = new THREE.Points(fireflyGeometry, new THREE.PointsMaterial({ vertexColors: true, size: 2 }));
+                scene.add(firefly);
+                fireflies.push({ object: firefly, positions: fireflyPositions, velocity: [Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1] });
+            }
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 10, 0);
+            scene.add(pointLight);
+
+            camera.position.z = 50;
+
+            document.addEventListener('mousemove', (event) => {
+                mouse.x = event.clientX - window.innerWidth / 2;
+                mouse.y = event.clientY - window.innerHeight / 2;
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            rotation.x += mouse.x * 0.01;
+            rotation.y += mouse.y * 0.01;
+            mouse.x *= 0.9;
+            mouse.y *= 0.9;
+
+            camera.rotation.x = rotation.y * 0.01;
+            camera.rotation.y = rotation.x * 0.01;
+
+            fireflies.forEach((firefly) => {
+                firefly.positions[0] += firefly.velocity[0];
+                firefly.positions[1] += firefly.velocity[1];
+                firefly.positions[2] += firefly.velocity[2];
+
+                if (firefly.positions[0] > 50 || firefly.positions[0] < -50) {
+                    firefly.velocity[0] *= -1;
+                }
+                if (firefly.positions[1] > 50 || firefly.positions[1] < -50) {
+                    firefly.velocity[1] *= -1;
+                }
+                if (firefly.positions[2] > 50 || firefly.positions[2] < -50) {
+                    firefly.velocity[2] *= -1;
+                }
+
+                firefly.object.position.set(firefly.positions[0], firefly.positions[1], firefly.positions[2]);
+            });
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
