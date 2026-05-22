@@ -1,0 +1,141 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, fish = [], reef, oceanFloor, sunLight;
+        let dragStart = null, dragEnd = null;
+        let mouseDown = false;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Coral Reef
+            const reefGeometry = new THREE.BoxGeometry(100, 20, 100);
+            const reefMaterial = new THREE.MeshPhongMaterial({ color: 0xff99cc });
+            reef = new THREE.Mesh(reefGeometry, reefMaterial);
+            reef.position.set(0, -20, 0);
+            scene.add(reef);
+
+            // Ocean Floor
+            const oceanFloorGeometry = new THREE.PlaneGeometry(1000, 1000);
+            const oceanFloorMaterial = new THREE.MeshPhongMaterial({ color: 0x66ffff, side: THREE.DoubleSide });
+            oceanFloor = new THREE.Mesh(oceanFloorGeometry, oceanFloorMaterial);
+            oceanFloor.rotation.x = -Math.PI / 2;
+            oceanFloor.position.set(0, -50, 0);
+            scene.add(oceanFloor);
+
+            // Sun Light
+            sunLight = new THREE.DirectionalLight(0xffffff, 1);
+            sunLight.position.set(0, 10, 10);
+            scene.add(sunLight);
+
+            // Ambient Light
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            // Fish
+            for (let i = 0; i < 100; i++) {
+                const fishGeometry = new THREE.SphereGeometry(1, 16, 16);
+                const fishMaterial = new THREE.MeshPhongMaterial({ color: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 50%)`) });
+                const fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+                fishMesh.position.set(Math.random() * 100 - 50, Math.random() * 20 - 10, Math.random() * 100 - 50);
+                fishMesh.velocity = new THREE.Vector3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+                fish.push(fishMesh);
+                scene.add(fishMesh);
+            }
+
+            camera.position.set(0, 10, 20);
+            camera.lookAt(0, 0, 0);
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onMouseDown(event) {
+            mouseDown = true;
+            dragStart = new THREE.Vector2(event.clientX, event.clientY);
+        }
+
+        function onMouseMove(event) {
+            if (mouseDown) {
+                dragEnd = new THREE.Vector2(event.clientX, event.clientY);
+                const delta = new THREE.Vector2().subVectors(dragEnd, dragStart);
+                camera.rotation.x += delta.y * 0.01;
+                camera.rotation.y += delta.x * 0.01;
+                dragStart = dragEnd;
+            }
+        }
+
+        function onMouseUp() {
+            mouseDown = false;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Fish animation
+            for (let i = 0; i < fish.length; i++) {
+                const fishMesh = fish[i];
+                fishMesh.position.add(fishMesh.velocity);
+                if (fishMesh.position.x > 50 || fishMesh.position.x < -50) {
+                    fishMesh.velocity.x *= -1;
+                }
+                if (fishMesh.position.z > 50 || fishMesh.position.z < -50) {
+                    fishMesh.velocity.z *= -1;
+                }
+                if (fishMesh.position.y > 10 || fishMesh.position.y < -10) {
+                    fishMesh.velocity.y *= -1;
+                }
+            }
+
+            // Ocean waves
+            oceanFloor.material.color = new THREE.Color(`hsl(${Date.now() * 0.001}, 100%, 50%)`);
+
+            // Render
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
