@@ -1,0 +1,107 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clockwork Dreamscape</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Clockwork Dreamscape</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let renderer = new THREE.WebGLRenderer({
+            canvas: document.createElement('canvas'),
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000);
+        document.body.appendChild(renderer.domElement);
+
+        let gears = [];
+        for (let i = 0; i < 10; i++) {
+            let geometry = new THREE.TorusGeometry(Math.random() * 2 + 1, 0.2, 16, 60);
+            let material = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x333333, shininess: 10 });
+            let gear = new THREE.Mesh(geometry, material);
+            gear.position.set(Math.random() * 10 - 5, Math.random() * 5 - 2.5, Math.random() * 10 - 5);
+            gear.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            scene.add(gear);
+            gears.push(gear);
+        }
+
+        let pendulums = [];
+        for (let i = 0; i < 5; i++) {
+            let geometry = new THREE.SphereGeometry(0.2, 16, 16);
+            let material = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x333333, shininess: 10 });
+            let pendulum = new THREE.Mesh(geometry, material);
+            pendulum.position.set(Math.random() * 5 - 2.5, Math.random() * 5 - 2.5, Math.random() * 5 - 2.5);
+            pendulum.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            scene.add(pendulum);
+            pendulums.push(pendulum);
+        }
+
+        let mist = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshBasicMaterial({ color: 0x777777, transparent: true, opacity: 0.5 }));
+        mist.position.set(0, -5, 0);
+        mist.rotation.set(-Math.PI / 2, 0, 0);
+        scene.add(mist);
+
+        let moon = new THREE.DirectionalLight(0xffffff, 0.5);
+        moon.position.set(0, 10, 10);
+        scene.add(moon);
+
+        camera.position.set(0, 5, 10);
+        camera.lookAt(0, 0, 0);
+
+        let drag = false;
+        let prevX, prevY;
+        document.addEventListener('mousedown', (e) => {
+            drag = true;
+            prevX = e.clientX;
+            prevY = e.clientY;
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (drag) {
+                camera.rotation.x += (e.clientY - prevY) * 0.01;
+                camera.rotation.y += (e.clientX - prevX) * 0.01;
+                prevX = e.clientX;
+                prevY = e.clientY;
+            }
+        });
+        document.addEventListener('mouseup', () => {
+            drag = false;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            gears.forEach((gear, i) => {
+                gear.rotation.x += 0.001 * (i % 2 === 0 ? 1 : -1);
+                gear.rotation.y += 0.001 * (i % 2 === 0 ? 1 : -1);
+            });
+            pendulums.forEach((pendulum, i) => {
+                pendulum.rotation.x += 0.01 * (i % 2 === 0 ? 1 : -1);
+                pendulum.position.y = Math.sin(Date.now() * 0.01 + i) * 2 - 2.5;
+            });
+            mist.position.x = Math.sin(Date.now() * 0.01) * 5;
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
+```
