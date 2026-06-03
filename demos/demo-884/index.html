@@ -1,0 +1,146 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesmerizing Dreamscape</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-family: monospace;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Surreal Dreamscape</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, mesh, treeMesh, auroraMesh;
+        let rotationX = 0, rotationY = 0;
+        let mouseDown = false, startX, startY;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            let geometry = new THREE.PlaneGeometry(100, 100);
+            let material = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.5
+            });
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.position.z = -50;
+            scene.add(mesh);
+
+            let treeGeometry = new THREE.ConeGeometry(1, 5, 4);
+            let treeMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.5
+            });
+            for (let i = 0; i < 100; i++) {
+                treeMesh = new THREE.Mesh(treeGeometry, treeMaterial);
+                treeMesh.position.x = Math.random() * 50 - 25;
+                treeMesh.position.y = Math.random() * 50 - 25;
+                treeMesh.position.z = Math.random() * 50 - 25;
+                scene.add(treeMesh);
+            }
+
+            let auroraGeometry = new THREE.SphereGeometry(50, 32, 32);
+            let auroraMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff69b4,
+                transparent: true,
+                opacity: 0.5
+            });
+            auroraMesh = new THREE.Mesh(auroraGeometry, auroraMaterial);
+            auroraMesh.position.y = 50;
+            scene.add(auroraMesh);
+
+            let ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            let pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.z = -50;
+            scene.add(pointLight);
+
+            camera.position.z = 100;
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            mesh.rotation.x += 0.01;
+            mesh.rotation.y += 0.01;
+
+            for (let i = 0; i < scene.children.length; i++) {
+                if (scene.children[i].type === 'Mesh' && scene.children[i].geometry.type === 'ConeGeometry') {
+                    scene.children[i].rotation.x += 0.01;
+                    scene.children[i].rotation.y += 0.01;
+                }
+            }
+
+            auroraMesh.rotation.x += 0.01;
+            auroraMesh.rotation.y += 0.01;
+            auroraMesh.scale.x = Math.sin(Date.now() * 0.001) + 1.5;
+            auroraMesh.scale.y = Math.sin(Date.now() * 0.001) + 1.5;
+            auroraMesh.scale.z = Math.sin(Date.now() * 0.001) + 1.5;
+
+            camera.rotation.x += rotationX;
+            camera.rotation.y += rotationY;
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onMouseDown(event) {
+            mouseDown = true;
+            startX = event.clientX;
+            startY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (mouseDown) {
+                rotationX = (event.clientY - startY) * 0.01;
+                rotationY = (event.clientX - startX) * 0.01;
+                startX = event.clientX;
+                startY = event.clientY;
+            }
+        }
+
+        function onMouseUp() {
+            mouseDown = false;
+        }
+    </script>
+</body>
+</html>
+```
