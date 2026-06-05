@@ -1,0 +1,121 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystical Underwater Environment</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Mystical Underwater Environment</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let renderer = new THREE.WebGLRenderer({
+            canvas: document.createElement('canvas'),
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        let jellyfish = [];
+        for (let i = 0; i < 10; i++) {
+            let geometry = new THREE.SphereGeometry(0.5, 32, 32);
+            let material = new THREE.MeshPhongMaterial({
+                color: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 50%)`),
+                transparent: true,
+                opacity: 0.5
+            });
+            let mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = Math.random() * 10 - 5;
+            mesh.position.y = Math.random() * 10 - 5;
+            mesh.position.z = Math.random() * 10 - 5;
+            scene.add(mesh);
+            jellyfish.push(mesh);
+        }
+
+        let seaweed = [];
+        for (let i = 0; i < 50; i++) {
+            let geometry = new THREE.BoxGeometry(0.1, 1, 0.1);
+            let material = new THREE.MeshPhongMaterial({
+                color: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 20%)`),
+                emissive: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 10%)`)
+            });
+            let mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = Math.random() * 10 - 5;
+            mesh.position.y = Math.random() * -5;
+            mesh.position.z = Math.random() * 10 - 5;
+            scene.add(mesh);
+            seaweed.push(mesh);
+        }
+
+        let fish = [];
+        for (let i = 0; i < 50; i++) {
+            let geometry = new THREE.SphereGeometry(0.1, 16, 16);
+            let material = new THREE.MeshPhongMaterial({
+                color: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 50%)`),
+                emissive: new THREE.Color(`hsl(${Math.random() * 360}, 100%, 10%)`)
+            });
+            let mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = Math.random() * 10 - 5;
+            mesh.position.y = Math.random() * 10 - 5;
+            mesh.position.z = Math.random() * 10 - 5;
+            scene.add(mesh);
+            fish.push(mesh);
+        }
+
+        let light = new THREE.PointLight(new THREE.Color(`hsl(150, 100%, 50%)`), 1, 100);
+        light.position.z = 10;
+        scene.add(light);
+
+        camera.position.z = 5;
+
+        let rotX = 0;
+        let rotY = 0;
+        let lastMouseX = null;
+        let lastMouseY = null;
+        document.addEventListener('mousemove', (e) => {
+            if (lastMouseX !== null && lastMouseY !== null) {
+                rotX += (e.clientY - lastMouseY) * 0.01;
+                rotY += (e.clientX - lastMouseX) * 0.01;
+            }
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            camera.rotation.x = rotX;
+            camera.rotation.y = rotY;
+            light.position.x = Math.sin(Date.now() * 0.01) * 5;
+            light.position.y = Math.cos(Date.now() * 0.01) * 5;
+            for (let i = 0; i < jellyfish.length; i++) {
+                jellyfish[i].position.y += Math.sin(Date.now() * 0.01 + i) * 0.01;
+            }
+            for (let i = 0; i < fish.length; i++) {
+                fish[i].position.x += Math.sin(Date.now() * 0.01 + i) * 0.01;
+                fish[i].position.y += Math.cos(Date.now() * 0.01 + i) * 0.01;
+                fish[i].position.z += Math.sin(Date.now() * 0.01 + i) * 0.01;
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
+```
