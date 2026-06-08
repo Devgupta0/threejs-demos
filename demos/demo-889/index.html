@@ -1,0 +1,151 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal Ocean Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Surreal Ocean Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, ocean, stars, crystals;
+        let mouseDown = false, mouseX, mouseY;
+        let rotX = 0, rotY = 0;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x3c1361);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            ocean = new THREE.Mesh(
+                new THREE.PlaneGeometry(100, 100, 100, 100),
+                new THREE.ShaderMaterial({
+                    vertexShader: `
+                        uniform float time;
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            vec3 pos = position;
+                            pos.z += sin((pos.x + time) * 0.01) * 0.1;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform vec3 color;
+                        uniform float time;
+                        varying vec2 vUv;
+                        void main() {
+                            vec3 c = color;
+                            c += sin((vUv.x + time) * 0.01) * 0.1;
+                            c += sin((vUv.y + time) * 0.01) * 0.1;
+                            gl_FragColor = vec4(c, 1.0);
+                        }
+                    `,
+                    uniforms: {
+                        time: { value: 0 },
+                        color: { value: new THREE.Color(0x00ffff) }
+                    }
+                })
+            );
+            ocean.rotation.x = -Math.PI / 2;
+            scene.add(ocean);
+
+            stars = new THREE.Group();
+            for (let i = 0; i < 1000; i++) {
+                let star = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.1, 8, 8),
+                    new THREE.MeshBasicMaterial({ color: 0xffffff })
+                );
+                star.position.x = Math.random() * 200 - 100;
+                star.position.y = Math.random() * 200 - 100;
+                star.position.z = Math.random() * 200 - 100;
+                stars.add(star);
+            }
+            scene.add(stars);
+
+            crystals = new THREE.Group();
+            for (let i = 0; i < 10; i++) {
+                let crystal = new THREE.Mesh(
+                    new THREE.OctahedronGeometry(1, 2),
+                    new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0xffffff, shininess: 100 })
+                );
+                crystal.position.x = Math.random() * 20 - 10;
+                crystal.position.y = Math.random() * 20 - 10;
+                crystal.position.z = Math.random() * 20 - 10;
+                crystal.scale.set(Math.random() * 2 + 1, Math.random() * 2 + 1, Math.random() * 2 + 1);
+                crystals.add(crystal);
+            }
+            scene.add(crystals);
+
+            let ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            let pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            ocean.material.uniforms.time.value += 0.01;
+
+            camera.rotation.x = rotX;
+            camera.rotation.y = rotY;
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            mouseDown = true;
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (mouseDown) {
+                rotX += (event.clientY - mouseY) * 0.01;
+                rotY += (event.clientX - mouseX) * 0.01;
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            }
+        }
+
+        function onMouseUp() {
+            mouseDown = false;
+        }
+    </script>
+</body>
+</html>
+```
