@@ -1,0 +1,150 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal Nebula</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Surreal Nebula</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, spacecraft, particles = [], particleGeometry, particleMaterial;
+        let mouseDown = false, mouseX = 0, mouseY = 0, rotX = 0, rotY = 0;
+        let disintegrationTimer = 0;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            const nebulaGeometry = new THREE.SphereGeometry(100, 64, 64);
+            const nebulaMaterial = new THREE.MeshBasicMaterial({
+                color: 0x88ccff,
+                transparent: true,
+                opacity: 0.5
+            });
+            const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
+            scene.add(nebula);
+
+            const spacecraftGeometry = new THREE.OctahedronGeometry(1, 2);
+            const spacecraftMaterial = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                specular: 0xffffff,
+                shininess: 100
+            });
+            spacecraft = new THREE.Mesh(spacecraftGeometry, spacecraftMaterial);
+            scene.add(spacecraft);
+
+            particleGeometry = new THREE.BufferGeometry();
+            const particlePositions = new Float32Array(10000 * 3);
+            for (let i = 0; i < 10000; i++) {
+                particlePositions[i * 3] = Math.random() * 2 - 1;
+                particlePositions[i * 3 + 1] = Math.random() * 2 - 1;
+                particlePositions[i * 3 + 2] = Math.random() * 2 - 1;
+            }
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            particleMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.5
+            });
+            for (let i = 0; i < 100; i++) {
+                const particle = new THREE.Points(particleGeometry, particleMaterial);
+                particles.push(particle);
+                scene.add(particle);
+            }
+
+            camera.position.z = 50;
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 50);
+            scene.add(pointLight);
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onMouseDown(event) {
+            mouseDown = true;
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (mouseDown) {
+                rotX += (event.clientY - mouseY) * 0.01;
+                rotY += (event.clientX - mouseX) * 0.01;
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            }
+        }
+
+        function onMouseUp() {
+            mouseDown = false;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            disintegrationTimer += 0.01;
+            if (disintegrationTimer > 10) {
+                disintegrationTimer = 0;
+            }
+
+            spacecraft.position.y = Math.sin(disintegrationTimer) * 5;
+            spacecraft.rotation.x = rotX;
+            spacecraft.rotation.y = rotY;
+
+            if (disintegrationTimer > 5) {
+                spacecraft.scale.set(1 - (disintegrationTimer - 5) / 5, 1 - (disintegrationTimer - 5) / 5, 1 - (disintegrationTimer - 5) / 5);
+            }
+
+            for (let i = 0; i < particles.length; i++) {
+                const particle = particles[i];
+                particle.position.x = Math.sin(disintegrationTimer + i) * 10;
+                particle.position.y = Math.cos(disintegrationTimer + i) * 10;
+                particle.position.z = Math.sin(disintegrationTimer + i) * 10;
+                particle.rotation.x = rotX;
+                particle.rotation.y = rotY;
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
