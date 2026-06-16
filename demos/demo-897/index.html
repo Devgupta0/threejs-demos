@@ -1,0 +1,143 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish = [], plankton = [], rotX = 0, rotY = 0, dragStartX, dragStartY;
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true
+        });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const ambientLight = new THREE.AmbientLight(0x444444);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(0, 0, 5);
+        scene.add(pointLight);
+
+        const waterGeometry = new THREE.PlaneGeometry(100, 100);
+        const waterMaterial = new THREE.MeshPhongMaterial({
+            color: 0x0000ff,
+            transparent: true,
+            opacity: 0.5
+        });
+        const water = new THREE.Mesh(waterGeometry, waterMaterial);
+        water.position.y = -5;
+        water.rotation.x = -Math.PI / 2;
+        scene.add(water);
+
+        for (let i = 0; i < 10; i++) {
+            const jellyfishGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            const jellyfishMaterial = new THREE.MeshPhongMaterial({
+                color: 0x00ff00,
+                transparent: true,
+                opacity: 0.5
+            });
+            const jelly = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+            jelly.position.x = Math.random() * 10 - 5;
+            jelly.position.y = Math.random() * 10 - 5;
+            jelly.position.z = Math.random() * 10 - 5;
+            scene.add(jelly);
+            jellyfish.push(jelly);
+        }
+
+        for (let i = 0; i < 100; i++) {
+            const planktonGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+            const planktonMaterial = new THREE.MeshPhongMaterial({
+                color: 0xffff00,
+                transparent: true,
+                opacity: 0.5
+            });
+            const plank = new THREE.Mesh(planktonGeometry, planktonMaterial);
+            plank.position.x = Math.random() * 10 - 5;
+            plank.position.y = Math.random() * 10 - 5;
+            plank.position.z = Math.random() * 10 - 5;
+            scene.add(plank);
+            plankton.push(plank);
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (dragStartX !== undefined && dragStartY !== undefined) {
+                rotX += (e.clientY - dragStartY) * 0.01;
+                rotY += (e.clientX - dragStartX) * 0.01;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            dragStartX = undefined;
+            dragStartY = undefined;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            camera.rotation.x = rotX;
+            camera.rotation.y = rotY;
+
+            jellyfish.forEach((jelly) => {
+                jelly.position.z += 0.01;
+                if (jelly.position.z > 5) {
+                    jelly.position.z = -5;
+                }
+            });
+
+            plankton.forEach((plank) => {
+                plank.position.z += 0.005;
+                if (plank.position.z > 5) {
+                    plank.position.z = -5;
+                }
+            });
+
+            water.position.y = Math.sin(Date.now() * 0.001) * 0.1 - 5;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
+```
