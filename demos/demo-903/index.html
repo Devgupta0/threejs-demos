@@ -1,0 +1,163 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oceanic Dreamscape</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Oceanic Dreamscape</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish, plants, aura;
+        let mouse = { x: 0, y: 0 };
+        let rotation = { x: 0, y: 0 };
+        let audioContext, analyser, frequencyData;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            audioContext = new AudioContext();
+            analyser = audioContext.createAnalyser();
+            frequencyData = new Uint8Array(analyser.frequencyBinCount);
+
+            // Create jellyfish
+            jellyfish = [];
+            for (let i = 0; i < 10; i++) {
+                let geometry = new THREE.SphereGeometry(0.5, 32, 32);
+                let material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        time: { value: 0 }
+                    },
+                    vertexShader: `
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float time;
+                        varying vec2 vUv;
+                        void main() {
+                            vec3 c = vec3(sin((vUv.x + time) * 10.0), sin((vUv.y + time) * 10.0), sin((vUv.x + vUv.y + time) * 10.0));
+                            gl_FragColor = vec4(c * 0.5 + 0.5, 1.0);
+                        }
+                    `
+                });
+                let jellyfishMesh = new THREE.Mesh(geometry, material);
+                jellyfishMesh.position.x = Math.random() * 10 - 5;
+                jellyfishMesh.position.y = Math.random() * 10 - 5;
+                jellyfishMesh.position.z = Math.random() * 10 - 5;
+                scene.add(jellyfishMesh);
+                jellyfish.push(jellyfishMesh);
+            }
+
+            // Create plants
+            plants = [];
+            for (let i = 0; i < 50; i++) {
+                let geometry = new THREE.SphereGeometry(0.1, 16, 16);
+                let material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                let plantMesh = new THREE.Mesh(geometry, material);
+                plantMesh.position.x = Math.random() * 10 - 5;
+                plantMesh.position.y = Math.random() * 10 - 5;
+                plantMesh.position.z = Math.random() * 10 - 5;
+                scene.add(plantMesh);
+                plants.push(plantMesh);
+            }
+
+            // Create aura
+            aura = new THREE.Mesh(new THREE.SphereGeometry(10, 32, 32), new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    varying vec2 vUv;
+                    void main() {
+                        vec3 c = vec3(sin((vUv.x + time) * 10.0), sin((vUv.y + time) * 10.0), sin((vUv.x + vUv.y + time) * 10.0));
+                        gl_FragColor = vec4(c * 0.5 + 0.5, 0.5);
+                    }
+                `
+            }));
+            scene.add(aura);
+
+            camera.position.z = 5;
+
+            document.addEventListener('mousemove', (event) => {
+                mouse.x = event.clientX - window.innerWidth / 2;
+                mouse.y = event.clientY - window.innerHeight / 2;
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            rotation.x += mouse.x * 0.01;
+            rotation.y += mouse.y * 0.01;
+            mouse.x *= 0.9;
+            mouse.y *= 0.9;
+
+            camera.rotation.x = rotation.x;
+            camera.rotation.y = rotation.y;
+
+            let time = performance.now() * 0.001;
+            for (let jellyfishMesh of jellyfish) {
+                jellyfishMesh.material.uniforms.time.value = time;
+                jellyfishMesh.position.y = Math.sin(time + jellyfishMesh.position.x) * 0.1;
+            }
+
+            for (let plantMesh of plants) {
+                plantMesh.scale.x = Math.sin(time + plantMesh.position.x) * 0.1 + 1;
+                plantMesh.scale.y = Math.sin(time + plantMesh.position.y) * 0.1 + 1;
+                plantMesh.scale.z = Math.sin(time + plantMesh.position.z) * 0.1 + 1;
+            }
+
+            aura.material.uniforms.time.value = time;
+
+            analyser.fftSize = 256;
+            analyser.getByteFrequencyData(frequencyData);
+            let sum = 0;
+            for (let i = 0; i < frequencyData.length; i++) {
+                sum += frequencyData[i];
+            }
+            let average = sum / frequencyData.length;
+            aura.scale.x = average * 0.01 + 1;
+            aura.scale.y = average * 0.01 + 1;
+            aura.scale.z = average * 0.01 + 1;
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
