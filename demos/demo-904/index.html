@@ -1,0 +1,157 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Underwater Metropolis</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      overflow: hidden;
+    }
+    #title {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-family: monospace;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="title">Underwater Metropolis</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, fish, jellyfish, plants;
+    let mouseDown = false, mouseX, mouseY;
+    let rotX = 0, rotY = 0;
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 500;
+
+      renderer = new THREE.WebGLRenderer({
+        antialias: true
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Lights
+      let ambientLight = new THREE.AmbientLight(0x444444);
+      scene.add(ambientLight);
+
+      let pointLight = new THREE.PointLight(0xffffff, 1, 1000);
+      pointLight.position.set(0, 0, 200);
+      scene.add(pointLight);
+
+      // Jellyfish
+      jellyfish = [];
+      for (let i = 0; i < 10; i++) {
+        let geometry = new THREE.SphereGeometry(50, 32, 32);
+        let material = new THREE.MeshPhongMaterial({
+          color: new THREE.Color(`hsl(${i * 36}, 100%, 50%)`),
+          transparent: true,
+          opacity: 0.5
+        });
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(Math.random() * 200 - 100, Math.random() * 200 - 100, Math.random() * 200 - 100);
+        scene.add(mesh);
+        jellyfish.push(mesh);
+      }
+
+      // Plants
+      plants = [];
+      for (let i = 0; i < 50; i++) {
+        let geometry = new THREE.SphereGeometry(10, 16, 16);
+        let material = new THREE.MeshPhongMaterial({
+          color: new THREE.Color(`hsl(${i * 7.2}, 100%, 50%)`),
+          transparent: true,
+          opacity: 0.5
+        });
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(Math.random() * 200 - 100, Math.random() * 200 - 100, Math.random() * 200 - 100);
+        scene.add(mesh);
+        plants.push(mesh);
+      }
+
+      // Fish
+      fish = [];
+      for (let i = 0; i < 50; i++) {
+        let geometry = new THREE.SphereGeometry(5, 16, 16);
+        let material = new THREE.MeshPhongMaterial({
+          color: new THREE.Color(`hsl(${i * 7.2}, 100%, 50%)`),
+          transparent: true,
+          opacity: 0.5
+        });
+        let mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(Math.random() * 200 - 100, Math.random() * 200 - 100, Math.random() * 200 - 100);
+        scene.add(mesh);
+        fish.push(mesh);
+      }
+
+      window.addEventListener('resize', onWindowResize);
+      window.addEventListener('mousedown', onMouseDown);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onMouseDown(event) {
+      mouseDown = true;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    }
+
+    function onMouseMove(event) {
+      if (mouseDown) {
+        rotX += (event.clientY - mouseY) * 0.01;
+        rotY += (event.clientX - mouseX) * 0.01;
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+      }
+    }
+
+    function onMouseUp() {
+      mouseDown = false;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      camera.rotation.x = rotX;
+      camera.rotation.y = rotY;
+
+      // Update jellyfish
+      for (let i = 0; i < jellyfish.length; i++) {
+        jellyfish[i].position.y = Math.sin(Date.now() * 0.001 + i) * 50;
+      }
+
+      // Update plants
+      for (let i = 0; i < plants.length; i++) {
+        plants[i].position.y = Math.sin(Date.now() * 0.002 + i) * 20;
+      }
+
+      // Update fish
+      for (let i = 0; i < fish.length; i++) {
+        fish[i].position.x = Math.sin(Date.now() * 0.01 + i) * 100;
+        fish[i].position.y = Math.cos(Date.now() * 0.01 + i) * 100;
+      }
+
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
+```
