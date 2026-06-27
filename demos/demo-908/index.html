@@ -1,0 +1,136 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bioluminescent Underwater Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Bioluminescent Underwater Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let renderer = new THREE.WebGLRenderer({
+            canvas: document.createElement('canvas'),
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        let geometry = new THREE.SphereGeometry(1, 32, 32);
+        let material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+        let jellyfish = [];
+        for (let i = 0; i < 20; i++) {
+            let mesh = new THREE.Mesh(geometry, material);
+            mesh.position.x = Math.random() * 10 - 5;
+            mesh.position.y = Math.random() * 10 - 5;
+            mesh.position.z = Math.random() * 10 - 5;
+            jellyfish.push(mesh);
+            scene.add(mesh);
+
+            let tentacleGeometry = new THREE.BufferGeometry();
+            let tentaclePositions = [];
+            for (let j = 0; j < 100; j++) {
+                tentaclePositions.push(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+            }
+            tentacleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(tentaclePositions, 3));
+            let tentacleMaterial = new THREE.LineBasicMaterial({ color: 0x00ffff });
+            let tentacle = new THREE.Line(tentacleGeometry, tentacleMaterial);
+            tentacle.position.copy(mesh.position);
+            scene.add(tentacle);
+        }
+
+        let fishGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+        let fishMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        let fish = [];
+        for (let i = 0; i < 50; i++) {
+            let mesh = new THREE.Mesh(fishGeometry, fishMaterial);
+            mesh.position.x = Math.random() * 20 - 10;
+            mesh.position.y = Math.random() * 10 - 5;
+            mesh.position.z = Math.random() * 10 - 5;
+            fish.push(mesh);
+            scene.add(mesh);
+        }
+
+        let coralGeometry = new THREE.PlaneGeometry(20, 20);
+        let coralMaterial = new THREE.MeshBasicMaterial({ color: 0xff9900 });
+        let coral = new THREE.Mesh(coralGeometry, coralMaterial);
+        coral.position.z = -10;
+        coral.rotation.x = -Math.PI / 2;
+        scene.add(coral);
+
+        let oceanGeometry = new THREE.PlaneGeometry(50, 50);
+        let oceanMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        let ocean = new THREE.Mesh(oceanGeometry, oceanMaterial);
+        ocean.position.z = -20;
+        ocean.rotation.x = -Math.PI / 2;
+        scene.add(ocean);
+
+        let ambientLight = new THREE.AmbientLight(0x444444);
+        scene.add(ambientLight);
+
+        let pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(0, 0, 10);
+        scene.add(pointLight);
+
+        camera.position.z = 5;
+
+        let drag = false;
+        let prevX, prevY;
+        document.addEventListener('mousedown', (e) => {
+            drag = true;
+            prevX = e.clientX;
+            prevY = e.clientY;
+        });
+        document.addEventListener('mouseup', () => {
+            drag = false;
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (drag) {
+                camera.rotation.x += (e.clientY - prevY) * 0.01;
+                camera.rotation.y += (e.clientX - prevX) * 0.01;
+                prevX = e.clientX;
+                prevY = e.clientY;
+            }
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            jellyfish.forEach((jelly) => {
+                jelly.position.y += 0.01;
+                if (jelly.position.y > 5) {
+                    jelly.position.y = -5;
+                }
+            });
+
+            fish.forEach((fish) => {
+                fish.position.x += 0.01;
+                if (fish.position.x > 10) {
+                    fish.position.x = -10;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
+```
