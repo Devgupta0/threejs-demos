@@ -1,0 +1,180 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Surreal Ocean Scene</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      font-family: monospace;
+    }
+    #title {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div id="title">Surreal Ocean Scene</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Create the scene, camera, and renderer
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({
+      canvas: document.createElement('canvas'),
+      antialias: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add event listener for window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Create the ocean
+    const oceanGeometry = new THREE.PlaneGeometry(100, 100);
+    const oceanMaterial = new THREE.MeshPhongMaterial({
+      color: 0x2244ff,
+      side: THREE.DoubleSide,
+      shininess: 100
+    });
+    const ocean = new THREE.Mesh(oceanGeometry, oceanMaterial);
+    ocean.rotation.x = Math.PI / 2;
+    ocean.position.y = -10;
+    scene.add(ocean);
+
+    // Create the jellyfish
+    const jellyfishGeometry = new THREE.SphereGeometry(5, 32, 32);
+    const jellyfishMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffff00,
+      transparent: true,
+      opacity: 0.5
+    });
+    const jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+    jellyfish.position.y = 5;
+    scene.add(jellyfish);
+
+    // Create the jellyfish tentacles
+    const tentacleCount = 10;
+    const tentacleGeometry = new THREE.CylinderGeometry(0.1, 0.1, 10, 32);
+    const tentacleMaterial = new THREE.MeshPhongMaterial({
+      color: 0x00ff00,
+      shininess: 100
+    });
+    for (let i = 0; i < tentacleCount; i++) {
+      const tentacle = new THREE.Mesh(tentacleGeometry, tentacleMaterial);
+      tentacle.position.x = Math.sin(i * Math.PI / 5) * 5;
+      tentacle.position.z = Math.cos(i * Math.PI / 5) * 5;
+      tentacle.position.y = -5;
+      tentacle.rotation.x = Math.PI / 2;
+      scene.add(tentacle);
+    }
+
+    // Create the fish
+    const fishCount = 100;
+    const fishGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+    const fishMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.5
+    });
+    const fish = [];
+    for (let i = 0; i < fishCount; i++) {
+      const fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+      fishMesh.position.x = Math.random() * 10 - 5;
+      fishMesh.position.z = Math.random() * 10 - 5;
+      fishMesh.position.y = Math.random() * 5 - 2.5;
+      fish.push(fishMesh);
+      scene.add(fishMesh);
+    }
+
+    // Create the moon
+    const moonGeometry = new THREE.SphereGeometry(2, 32, 32);
+    const moonMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.5
+    });
+    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    moon.position.y = 20;
+    moon.position.z = -20;
+    scene.add(moon);
+
+    // Create the ambient light
+    const ambientLight = new THREE.AmbientLight(0x444444);
+    scene.add(ambientLight);
+
+    // Create the point light
+    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    pointLight.position.y = 10;
+    pointLight.position.z = -10;
+    scene.add(pointLight);
+
+    // Set the camera position
+    camera.position.z = 20;
+
+    // Set the drag rotation variables
+    let isDragging = false;
+    let previousMousePosition = null;
+
+    // Add event listener for mouse down
+    document.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      previousMousePosition = {
+        x: event.clientX,
+        y: event.clientY
+      };
+    });
+
+    // Add event listener for mouse up
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      previousMousePosition = null;
+    });
+
+    // Add event listener for mouse move
+    document.addEventListener('mousemove', (event) => {
+      if (isDragging) {
+        const deltaMousePosition = {
+          x: event.clientX - previousMousePosition.x,
+          y: event.clientY - previousMousePosition.y
+        };
+        camera.rotation.x += deltaMousePosition.y * 0.01;
+        camera.rotation.y += deltaMousePosition.x * 0.01;
+        previousMousePosition = {
+          x: event.clientX,
+          y: event.clientY
+        };
+      }
+    });
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Update the jellyfish position
+      jellyfish.position.y = 5 + Math.sin(Date.now() * 0.01) * 2;
+
+      // Update the fish positions
+      for (let i = 0; i < fishCount; i++) {
+        fish[i].position.x += Math.random() * 0.1 - 0.05;
+        fish[i].position.z += Math.random() * 0.1 - 0.05;
+        fish[i].position.y += Math.random() * 0.1 - 0.05;
+      }
+
+      // Render the scene
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
+```
