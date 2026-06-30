@@ -1,0 +1,140 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Temple</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #scene-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-title">Underwater Temple</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, fish, plants, temple;
+        let rotationX = 0, rotationY = 0;
+        let dragging = false, lastX, lastY;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Temple
+            temple = new THREE.Group();
+            for (let i = 0; i < 10; i++) {
+                let stone = new THREE.Mesh(
+                    new THREE.BoxGeometry(1, 1, 1),
+                    new THREE.MeshPhongMaterial({ color: 0x444444 })
+                );
+                stone.position.x = Math.random() * 10 - 5;
+                stone.position.y = Math.random() * 5 - 2.5;
+                stone.position.z = Math.random() * 10 - 5;
+                temple.add(stone);
+            }
+            scene.add(temple);
+
+            // Plants
+            plants = new THREE.Group();
+            for (let i = 0; i < 100; i++) {
+                let plant = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.1, 10, 10),
+                    new THREE.MeshPhongMaterial({ color: 0x33CC33, emissive: 0x11FF11 })
+                );
+                plant.position.x = Math.random() * 10 - 5;
+                plant.position.y = Math.random() * 5 - 2.5;
+                plant.position.z = Math.random() * 10 - 5;
+                plants.add(plant);
+            }
+            scene.add(plants);
+
+            // Fish
+            fish = new THREE.Group();
+            for (let i = 0; i < 20; i++) {
+                let fishMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.2, 10, 10),
+                    new THREE.MeshPhongMaterial({ color: 0x0000FF, emissive: 0x0000FF })
+                );
+                fishMesh.position.x = Math.random() * 10 - 5;
+                fishMesh.position.y = Math.random() * 5 - 2.5;
+                fishMesh.position.z = Math.random() * 10 - 5;
+                fish.add(fishMesh);
+            }
+            scene.add(fish);
+
+            // Lights
+            let ambientLight = new THREE.AmbientLight(0x111111);
+            scene.add(ambientLight);
+            let moonLight = new THREE.DirectionalLight(0x888888, 1);
+            moonLight.position.set(0, 10, 0);
+            scene.add(moonLight);
+
+            // Camera
+            camera.position.z = 10;
+
+            // Event listeners
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            fish.rotation.y += 0.01;
+            plants.rotation.y += 0.01;
+            temple.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            dragging = true;
+            lastX = event.clientX;
+            lastY = event.clientY;
+        }
+
+        function onMouseUp() {
+            dragging = false;
+        }
+
+        function onMouseMove(event) {
+            if (dragging) {
+                rotationX += (event.clientY - lastY) * 0.01;
+                rotationY += (event.clientX - lastX) * 0.01;
+                camera.rotation.x = rotationX;
+                camera.rotation.y = rotationY;
+                lastX = event.clientX;
+                lastY = event.clientY;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+</body>
+</html>
+```
