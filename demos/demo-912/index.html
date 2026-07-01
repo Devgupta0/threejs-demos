@@ -1,0 +1,130 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotus Lake</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Lotus Lake</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, flowers = [];
+        let rotX = 0, rotY = 0;
+        let dragging = false;
+        let lastX, lastY;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            let lakeGeometry = new THREE.PlaneGeometry(100, 100);
+            let lakeMaterial = new THREE.MeshPhongMaterial({
+                color: 0x4444ff,
+                specular: 0xffffff,
+                shininess: 100
+            });
+            let lake = new THREE.Mesh(lakeGeometry, lakeMaterial);
+            lake.rotation.x = -Math.PI / 2;
+            lake.position.y = -2;
+            scene.add(lake);
+
+            for (let i = 0; i < 1000; i++) {
+                let flowerGeometry = new THREE.ConeGeometry(0.5, 1, 6);
+                let flowerMaterial = new THREE.MeshPhongMaterial({
+                    color: 0xffcccc,
+                    specular: 0xffffff,
+                    shininess: 100
+                });
+                let flower = new THREE.Mesh(flowerGeometry, flowerMaterial);
+                flower.position.x = Math.random() * 10 - 5;
+                flower.position.z = Math.random() * 10 - 5;
+                flower.position.y = -1.5;
+                flowers.push(flower);
+                scene.add(flower);
+            }
+
+            let sunGeometry = new THREE.SphereGeometry(1, 32, 32);
+            let sunMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffcc00
+            });
+            let sun = new THREE.Mesh(sunGeometry, sunMaterial);
+            sun.position.y = 5;
+            sun.position.z = -5;
+            scene.add(sun);
+
+            let ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            let pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.copy(sun.position);
+            scene.add(pointLight);
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            camera.rotation.x = rotX;
+            camera.rotation.y = rotY;
+
+            for (let i = 0; i < flowers.length; i++) {
+                let flower = flowers[i];
+                flower.rotation.y += 0.01;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            dragging = true;
+            lastX = event.clientX;
+            lastY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (dragging) {
+                rotX += (event.clientY - lastY) * 0.01;
+                rotY += (event.clientX - lastX) * 0.01;
+                lastX = event.clientX;
+                lastY = event.clientY;
+            }
+        }
+
+        function onMouseUp() {
+            dragging = false;
+        }
+    </script>
+</body>
+</html>
+```
