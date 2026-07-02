@@ -1,0 +1,99 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Research Facility</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Research Facility</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, fish, facility, dragging = false, rotX = 0, rotY = 0, mouseX = 0, mouseY = 0;
+        const init = () => {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            camera.position.z = 5;
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+            facility = new THREE.Group();
+            const facilityGeometry = new THREE.BoxGeometry(2, 2, 2);
+            const facilityMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 10; j++) {
+                    for (let k = 0; k < 5; k++) {
+                        const mesh = new THREE.Mesh(facilityGeometry, facilityMaterial);
+                        mesh.position.set(i * 2 - 10, j * 2 - 10, k * 2 - 5);
+                        facility.add(mesh);
+                    }
+                }
+            }
+            scene.add(facility);
+            fish = new THREE.Group();
+            const fishGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+            const fishMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff, emissive: 0x0000ff });
+            for (let i = 0; i < 100; i++) {
+                const mesh = new THREE.Mesh(fishGeometry, fishMaterial);
+                mesh.position.set(Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 10 - 5);
+                fish.add(mesh);
+            }
+            scene.add(fish);
+            animate();
+            document.addEventListener('mousedown', (event) => {
+                dragging = true;
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            });
+            document.addEventListener('mousemove', (event) => {
+                if (dragging) {
+                    rotX += (event.clientY - mouseY) * 0.01;
+                    rotY += (event.clientX - mouseX) * 0.01;
+                    mouseX = event.clientX;
+                    mouseY = event.clientY;
+                }
+            });
+            document.addEventListener('mouseup', () => {
+                dragging = false;
+            });
+        };
+        const animate = () => {
+            requestAnimationFrame(animate);
+            facility.rotation.x += 0.01;
+            facility.rotation.y += 0.01;
+            fish.rotation.x += 0.01;
+            fish.rotation.y += 0.01;
+            camera.rotation.x += rotX;
+            camera.rotation.y += rotY;
+            rotX *= 0.9;
+            rotY *= 0.9;
+            renderer.render(scene, camera);
+        };
+        init();
+    </script>
+</body>
+</html>
+```
