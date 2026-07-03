@@ -1,0 +1,137 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Mystical Ocean</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      overflow: hidden;
+    }
+    #title {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-family: monospace;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="title">Mystical Ocean</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, jellyfish, creatures, coral;
+    let mouseDown = false, prevMouse = { x: 0, y: 0 };
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 5;
+
+      renderer = new THREE.WebGLRenderer({
+        canvas: document.createElement('canvas'),
+        antialias: true
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const JellyfishGeometry = new THREE.SphereGeometry(1, 60, 60);
+      const jellyfishMaterial = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.5
+      });
+      jellyfish = new THREE.Mesh(JellyfishGeometry, jellyfishMaterial);
+      jellyfish.scale.set(2, 2, 2);
+      scene.add(jellyfish);
+
+      creatures = [];
+      for (let i = 0; i < 100; i++) {
+        const creatureGeometry = new THREE.SphereGeometry(0.1, 10, 10);
+        const creatureMaterial = new THREE.MeshBasicMaterial({
+          color: 0x00ff00
+        });
+        const creature = new THREE.Mesh(creatureGeometry, creatureMaterial);
+        creature.position.x = Math.random() * 4 - 2;
+        creature.position.y = Math.random() * 4 - 2;
+        creature.position.z = Math.random() * 4 - 2;
+        creatures.push(creature);
+        scene.add(creature);
+      }
+
+      coral = [];
+      for (let i = 0; i < 20; i++) {
+        const coralGeometry = new THREE.TorusGeometry(0.5, 0.1, 10, 20);
+        const coralMaterial = new THREE.MeshPhongMaterial({
+          color: 0xff69b4,
+          transparent: true,
+          opacity: 0.5
+        });
+        const coralMesh = new THREE.Mesh(coralGeometry, coralMaterial);
+        coralMesh.position.x = Math.random() * 4 - 2;
+        coralMesh.position.y = Math.random() * 4 - 2;
+        coralMesh.position.z = Math.random() * 4 - 2;
+        coral.push(coralMesh);
+        scene.add(coralMesh);
+      }
+
+      const fog = new THREE.Fog(0xadd8e6, 2, 10);
+      scene.fog = fog;
+
+      const ambientLight = new THREE.AmbientLight(0x444444);
+      scene.add(ambientLight);
+
+      const pointLight = new THREE.PointLight(0xffffff, 2, 10);
+      pointLight.position.set(0, 0, 5);
+      scene.add(pointLight);
+
+      document.addEventListener('mousedown', (e) => {
+        mouseDown = true;
+        prevMouse = { x: e.clientX, y: e.clientY };
+      });
+
+      document.addEventListener('mouseup', () => {
+        mouseDown = false;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (mouseDown) {
+          const dx = e.clientX - prevMouse.x;
+          const dy = e.clientY - prevMouse.y;
+          camera.rotation.x += dy * 0.01;
+          camera.rotation.y += dx * 0.01;
+          prevMouse = { x: e.clientX, y: e.clientY };
+        }
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      jellyfish.rotation.x += 0.01;
+      jellyfish.rotation.y += 0.01;
+
+      creatures.forEach((creature) => {
+        creature.position.x += Math.random() * 0.01 - 0.005;
+        creature.position.y += Math.random() * 0.01 - 0.005;
+        creature.position.z += Math.random() * 0.01 - 0.005;
+      });
+
+      coral.forEach((coralMesh) => {
+        coralMesh.rotation.x += 0.01;
+        coralMesh.rotation.y += 0.01;
+      });
+
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
+```
