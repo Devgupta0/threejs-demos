@@ -1,0 +1,139 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreamscape</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Dreamscape</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, tree, city;
+        let rotX = 0, rotY = 0;
+        let dragging = false;
+        let lastMouseX, lastMouseY;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            let treeGeometry = new THREE.SphereGeometry(1, 64, 64);
+            let treeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            tree = new THREE.Mesh(treeGeometry, treeMaterial);
+            tree.scale.set(5, 5, 5);
+            scene.add(tree);
+
+            let branchGeometry = new THREE.TorusGeometry(0.5, 0.1, 16, 60);
+            let branchMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            for (let i = 0; i < 10; i++) {
+                let branch = new THREE.Mesh(branchGeometry, branchMaterial);
+                branch.position.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1);
+                branch.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                branch.scale.set(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5);
+                tree.add(branch);
+            }
+
+            let rootGeometry = new THREE.ConeGeometry(0.5, 2, 16);
+            let rootMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            for (let i = 0; i < 10; i++) {
+                let root = new THREE.Mesh(rootGeometry, rootMaterial);
+                root.position.set(Math.random() * 2 - 1, -2, Math.random() * 2 - 1);
+                root.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                root.scale.set(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5);
+                tree.add(root);
+            }
+
+            city = new THREE.Group();
+            scene.add(city);
+
+            let buildingGeometry = new THREE.BoxGeometry(1, 2, 1);
+            let buildingMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
+            for (let i = 0; i < 50; i++) {
+                let building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+                building.position.set(Math.random() * 10 - 5, Math.random() * 2 - 1, Math.random() * 10 - 5);
+                building.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                building.scale.set(Math.random() * 0.5 + 0.5, Math.random() * 2 + 1, Math.random() * 0.5 + 0.5);
+                city.add(building);
+            }
+
+            let ambientLight = new THREE.AmbientLight(0x333333);
+            scene.add(ambientLight);
+
+            let pointLight = new THREE.PointLight(0xffffff, 1, 10);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            document.addEventListener('mousedown', (event) => {
+                dragging = true;
+                lastMouseX = event.clientX;
+                lastMouseY = event.clientY;
+            });
+
+            document.addEventListener('mouseup', () => {
+                dragging = false;
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if (dragging) {
+                    rotX += (event.clientY - lastMouseY) * 0.01;
+                    rotY += (event.clientX - lastMouseX) * 0.01;
+                    lastMouseX = event.clientX;
+                    lastMouseY = event.clientY;
+                }
+            });
+
+            document.addEventListener('wheel', (event) => {
+                camera.position.z += event.deltaY * 0.1;
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            tree.rotation.x += 0.01;
+            tree.rotation.y += 0.01;
+
+            city.position.z += 0.01;
+            if (city.position.z > 10) {
+                city.position.z = -10;
+            }
+
+            camera.rotation.x = rotX;
+            camera.rotation.y = rotY;
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
