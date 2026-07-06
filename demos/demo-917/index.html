@@ -1,0 +1,158 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish = [], seaweed = [], coral = [], lights = [], sunbeam;
+        let dragStart = null, dragEnd = null;
+        let rotation = { x: 0, y: 0 };
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Create ocean floor
+            let oceanFloor = new THREE.Mesh(
+                new THREE.PlaneGeometry(100, 100),
+                new THREE.MeshBasicMaterial({ color: 0x111111 })
+            );
+            oceanFloor.rotation.x = -Math.PI / 2;
+            scene.add(oceanFloor);
+
+            // Create jellyfish
+            for (let i = 0; i < 20; i++) {
+                let jellyfishMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.5, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: 0x00ffff })
+                );
+                jellyfishMesh.position.x = Math.random() * 10 - 5;
+                jellyfishMesh.position.y = Math.random() * 5 - 2.5;
+                jellyfishMesh.position.z = Math.random() * 5 - 2.5;
+                scene.add(jellyfishMesh);
+                jellyfish.push(jellyfishMesh);
+            }
+
+            // Create seaweed
+            for (let i = 0; i < 10; i++) {
+                let seaweedMesh = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.1, 0.1, 5, 16),
+                    new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+                );
+                seaweedMesh.position.x = Math.random() * 10 - 5;
+                seaweedMesh.position.y = -2.5;
+                seaweedMesh.position.z = Math.random() * 5 - 2.5;
+                seaweedMesh.rotation.x = Math.random() * Math.PI;
+                scene.add(seaweedMesh);
+                seaweed.push(seaweedMesh);
+            }
+
+            // Create coral
+            for (let i = 0; i < 10; i++) {
+                let coralMesh = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.2, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                );
+                coralMesh.position.x = Math.random() * 10 - 5;
+                coralMesh.position.y = -2.5;
+                coralMesh.position.z = Math.random() * 5 - 2.5;
+                scene.add(coralMesh);
+                coral.push(coralMesh);
+            }
+
+            // Create ocean floor lights
+            for (let i = 0; i < 10; i++) {
+                let light = new THREE.PointLight(0x00ffff, 1, 5);
+                light.position.x = Math.random() * 10 - 5;
+                light.position.y = -2.5;
+                light.position.z = Math.random() * 5 - 2.5;
+                scene.add(light);
+                lights.push(light);
+            }
+
+            // Create sunbeam
+            sunbeam = new THREE.DirectionalLight(0xffffff, 1);
+            sunbeam.position.set(0, 10, 0);
+            scene.add(sunbeam);
+
+            document.addEventListener('mousedown', onDocumentMouseDown);
+            document.addEventListener('mouseup', onDocumentMouseUp);
+            document.addEventListener('mousemove', onDocumentMouseMove);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate jellyfish
+            jellyfish.forEach((jellyfishMesh) => {
+                jellyfishMesh.rotation.x += 0.01;
+                jellyfishMesh.rotation.y += 0.01;
+            });
+
+            // Rotate seaweed
+            seaweed.forEach((seaweedMesh) => {
+                seaweedMesh.rotation.x += 0.01;
+            });
+
+            // Update camera rotation
+            if (dragStart && dragEnd) {
+                rotation.x += (dragEnd.y - dragStart.y) * 0.01;
+                rotation.y += (dragEnd.x - dragStart.x) * 0.01;
+                dragStart = null;
+                dragEnd = null;
+            }
+            camera.rotation.x = rotation.x;
+            camera.rotation.y = rotation.y;
+
+            renderer.render(scene, camera);
+        }
+
+        function onDocumentMouseDown(event) {
+            dragStart = { x: event.clientX, y: event.clientY };
+        }
+
+        function onDocumentMouseUp(event) {
+            dragEnd = { x: event.clientX, y: event.clientY };
+        }
+
+        function onDocumentMouseMove(event) {
+            if (dragStart) {
+                dragEnd = { x: event.clientX, y: event.clientY };
+            }
+        }
+    </script>
+</body>
+</html>
+```
