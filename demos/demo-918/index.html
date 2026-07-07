@@ -1,0 +1,106 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surreal Ocean</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Surreal Ocean</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let camera, scene, renderer, jellyfish, particles, anemones;
+        let mouse = { x: 0, y: 0 };
+        let rotation = { x: 0, y: 0 };
+
+        function init() {
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            const oceanFloor = new THREE.PlaneGeometry(100, 100);
+            const oceanFloorMaterial = new THREE.MeshBasicMaterial({ color: 0x111111 });
+            const ocean = new THREE.Mesh(oceanFloor, oceanFloorMaterial);
+            ocean.position.y = -5;
+            ocean.rotation.x = -Math.PI / 2;
+            scene.add(ocean);
+
+            const jellyfishGeometry = new THREE.SphereGeometry(2, 32, 32);
+            const jellyfishMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+            jellyfish.position.y = 2;
+            scene.add(jellyfish);
+
+            for (let i = 0; i < 100; i++) {
+                const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                particle.position.x = Math.random() * 10 - 5;
+                particle.position.y = Math.random() * 10 - 5;
+                particle.position.z = Math.random() * 10 - 5;
+                scene.add(particle);
+            }
+
+            for (let i = 0; i < 10; i++) {
+                const anemoneGeometry = new THREE.CylinderGeometry(0.1, 0.5, 2, 32);
+                const anemoneMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                const anemone = new THREE.Mesh(anemoneGeometry, anemoneMaterial);
+                anemone.position.x = Math.random() * 10 - 5;
+                anemone.position.y = -4;
+                anemone.position.z = Math.random() * 10 - 5;
+                scene.add(anemone);
+            }
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            window.addEventListener('mousemove', (event) => {
+                mouse.x = event.clientX - window.innerWidth / 2;
+                mouse.y = event.clientY - window.innerHeight / 2;
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            rotation.x += mouse.x * 0.01;
+            rotation.y += mouse.y * 0.01;
+            camera.rotation.x = rotation.x;
+            camera.rotation.y = rotation.y;
+
+            jellyfish.material.color.setHSL(Math.sin(Date.now() * 0.001) * 0.5 + 0.5, 1, 0.5);
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
+```
