@@ -1,0 +1,115 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bioluminescent Reef</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Bioluminescent Reef</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, fish = [], jellyfish;
+        let drag = false, prevX, prevY;
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            let ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            let pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            for (let i = 0; i < 1000; i++) {
+                let geometry = new THREE.SphereGeometry(0.1, 10, 10);
+                let material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+                let fishMesh = new THREE.Mesh(geometry, material);
+                fishMesh.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+                fishMesh.velocity = new THREE.Vector3(Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05, Math.random() * 0.1 - 0.05);
+                scene.add(fishMesh);
+                fish.push(fishMesh);
+            }
+
+            let jellyfishGeometry = new THREE.SphereGeometry(1, 30, 30);
+            let jellyfishMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff });
+            jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+            jellyfish.position.set(0, 0, 0);
+            scene.add(jellyfish);
+
+            let coralGeometry = new THREE.BoxGeometry(1, 1, 1);
+            let coralMaterial = new THREE.MeshBasicMaterial({ color: 0xff9900 });
+            for (let i = 0; i < 100; i++) {
+                let coralMesh = new THREE.Mesh(coralGeometry, coralMaterial);
+                coralMesh.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+                coralMesh.scale.set(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5);
+                scene.add(coralMesh);
+            }
+
+            document.addEventListener('mousedown', (e) => {
+                drag = true;
+                prevX = e.clientX;
+                prevY = e.clientY;
+            });
+            document.addEventListener('mouseup', () => {
+                drag = false;
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (drag) {
+                    camera.rotation.x += (e.clientY - prevY) * 0.01;
+                    camera.rotation.y += (e.clientX - prevX) * 0.01;
+                    prevX = e.clientX;
+                    prevY = e.clientY;
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            fish.forEach((fishMesh) => {
+                fishMesh.position.add(fishMesh.velocity);
+                if (fishMesh.position.x > 5 || fishMesh.position.x < -5) {
+                    fishMesh.velocity.x *= -1;
+                }
+                if (fishMesh.position.y > 5 || fishMesh.position.y < -5) {
+                    fishMesh.velocity.y *= -1;
+                }
+                if (fishMesh.position.z > 5 || fishMesh.position.z < -5) {
+                    fishMesh.velocity.z *= -1;
+                }
+            });
+            jellyfish.rotation.x += 0.01;
+            jellyfish.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
