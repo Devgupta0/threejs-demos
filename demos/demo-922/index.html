@@ -1,0 +1,120 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Garden</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Garden</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.createElement('canvas'),
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x112233, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0x66CCFF, 1.5, 100);
+        pointLight.position.set(0, 0, 5);
+        scene.add(pointLight);
+
+        // Seaweed
+        const seaweedGeometry = new THREE.PlaneGeometry(1, 10);
+        const seaweedMaterial = new THREE.MeshPhongMaterial({ color: 0x22AA88, transparent: true, opacity: 0.5 });
+        for (let i = 0; i < 10; i++) {
+            const seaweed = new THREE.Mesh(seaweedGeometry, seaweedMaterial);
+            seaweed.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+            seaweed.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            scene.add(seaweed);
+        }
+
+        // Bioluminescent flora
+        const floraGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+        const floraMaterial = new THREE.MeshPhongMaterial({ color: 0x44FFCC, emissive: 0x44FFCC });
+        for (let i = 0; i < 20; i++) {
+            const flora = new THREE.Mesh(floraGeometry, floraMaterial);
+            flora.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+            scene.add(flora);
+        }
+
+        // Fish
+        const fishGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+        const fishMaterial = new THREE.MeshPhongMaterial({ color: 0x66CCFF, transparent: true, opacity: 0.5 });
+        const fish = [];
+        for (let i = 0; i < 50; i++) {
+            const fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+            fishMesh.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+            scene.add(fishMesh);
+            fish.push(fishMesh);
+        }
+
+        // Camera settings
+        camera.position.set(0, 0, 10);
+
+        // Mouse event handling
+        let rotating = false;
+        let previousX = null;
+        let previousY = null;
+        document.addEventListener('mousedown', (event) => {
+            rotating = true;
+            previousX = event.clientX;
+            previousY = event.clientY;
+        });
+        document.addEventListener('mousemove', (event) => {
+            if (rotating) {
+                const deltaX = event.clientX - previousX;
+                const deltaY = event.clientY - previousY;
+                camera.rotation.x += deltaY * 0.01;
+                camera.rotation.y += deltaX * 0.01;
+                previousX = event.clientX;
+                previousY = event.clientY;
+            }
+        });
+        document.addEventListener('mouseup', () => {
+            rotating = false;
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            for (const fishMesh of fish) {
+                fishMesh.position.x += Math.random() * 0.01 - 0.005;
+                fishMesh.position.y += Math.random() * 0.01 - 0.005;
+                fishMesh.position.z += Math.random() * 0.01 - 0.005;
+            }
+            for (const seaweed of scene.children) {
+                if (seaweed.geometry.type === 'PlaneGeometry') {
+                    seaweed.rotation.x += 0.001;
+                    seaweed.rotation.y += 0.001;
+                }
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
+```
