@@ -1,0 +1,129 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Research Facility</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Research Facility</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, fish, bioluminescent, facility;
+        let rotationX = 0;
+        let rotationY = 0;
+        let dragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000);
+            document.body.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            facility = new THREE.Group();
+            const facilityGeometry = new THREE.BoxGeometry(2, 2, 2);
+            const facilityMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
+            for (let i = 0; i < 10; i++) {
+                const facilityMesh = new THREE.Mesh(facilityGeometry, facilityMaterial);
+                facilityMesh.position.set(Math.random() * 4 - 2, Math.random() * 4 - 2, Math.random() * 4 - 2);
+                facility.add(facilityMesh);
+            }
+            scene.add(facility);
+
+            bioluminescent = new THREE.Group();
+            const bioluminescentGeometry = new THREE.SphereGeometry(0.1, 10, 10);
+            const bioluminescentMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            for (let i = 0; i < 50; i++) {
+                const bioluminescentMesh = new THREE.Mesh(bioluminescentGeometry, bioluminescentMaterial);
+                bioluminescentMesh.position.set(Math.random() * 4 - 2, Math.random() * 4 - 2, Math.random() * 4 - 2);
+                bioluminescent.add(bioluminescentMesh);
+            }
+            scene.add(bioluminescent);
+
+            fish = new THREE.Group();
+            const fishGeometry = new THREE.SphereGeometry(0.1, 10, 10);
+            const fishMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+            for (let i = 0; i < 20; i++) {
+                const fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+                fishMesh.position.set(Math.random() * 4 - 2, Math.random() * 4 - 2, Math.random() * 4 - 2);
+                fish.add(fishMesh);
+            }
+            scene.add(fish);
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            facility.rotation.x += 0.001;
+            facility.rotation.y += 0.001;
+            bioluminescent.rotation.x += 0.001;
+            bioluminescent.rotation.y += 0.001;
+            fish.rotation.x += 0.001;
+            fish.rotation.y += 0.001;
+            fish.position.x += 0.01;
+            if (fish.position.x > 2) {
+                fish.position.x = -2;
+            }
+            camera.rotation.x = rotationX;
+            camera.rotation.y = rotationY;
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            dragging = true;
+            previousMousePosition = { x: event.clientX, y: event.clientY };
+        }
+
+        function onMouseMove(event) {
+            if (dragging) {
+                rotationX += (event.clientY - previousMousePosition.y) * 0.01;
+                rotationY += (event.clientX - previousMousePosition.x) * 0.01;
+                previousMousePosition = { x: event.clientX, y: event.clientY };
+            }
+        }
+
+        function onMouseUp() {
+            dragging = false;
+        }
+    </script>
+</body>
+</html>
+```
