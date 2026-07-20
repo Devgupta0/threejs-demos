@@ -1,0 +1,118 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mesmerizing Jellyfish</title>
+  <style>
+    body { margin: 0; }
+    #title { position: absolute; top: 10px; left: 10px; font-family: monospace; color: white; }
+  </style>
+</head>
+<body>
+  <div id="title">Dreamlike Ocean</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, jellyfish, fish, seaweed;
+    let mouseDown = false, mouseX = 0, mouseY = 0;
+    let rotX = 0, rotY = 0;
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 5;
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const geometry = new THREE.SphereGeometry(1, 64, 64);
+      const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+      jellyfish = new THREE.Mesh(geometry, material);
+      jellyfish.position.z = -2;
+      scene.add(jellyfish);
+
+      for (let i = 0; i < 100; i++) {
+        const fishGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+        const fishMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+        const fish = new THREE.Mesh(fishGeometry, fishMaterial);
+        fish.position.x = Math.random() * 4 - 2;
+        fish.position.y = Math.random() * 4 - 2;
+        fish.position.z = Math.random() * 4 - 2;
+        scene.add(fish);
+        if (!fish) fish = [];
+        fish.push(fish);
+      }
+      fish = scene.children.slice(2);
+
+      for (let i = 0; i < 100; i++) {
+        const seaweedGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(3 * 2);
+        positions[0] = Math.random() * 4 - 2;
+        positions[1] = Math.random() * 4 - 2;
+        positions[2] = Math.random() * 4 - 2;
+        positions[3] = positions[0] + Math.random() * 2 - 1;
+        positions[4] = positions[1] + Math.random() * 2 - 1;
+        positions[5] = positions[2] + Math.random() * 2 - 1;
+        seaweedGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const seaweedMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 });
+        const seaweed = new THREE.Line(seaweedGeometry, seaweedMaterial);
+        scene.add(seaweed);
+        if (!seaweed) seaweed = [];
+        seaweed.push(seaweed);
+      }
+      seaweed = scene.children.slice(102);
+
+      document.addEventListener('mousedown', onDocumentMouseDown, false);
+      document.addEventListener('mouseup', onDocumentMouseUp, false);
+      document.addEventListener('mousemove', onDocumentMouseMove, false);
+
+      window.addEventListener('resize', onWindowResize, false);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onDocumentMouseDown(event) {
+      mouseDown = true;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    }
+
+    function onDocumentMouseUp() {
+      mouseDown = false;
+    }
+
+    function onDocumentMouseMove(event) {
+      if (mouseDown) {
+        rotX += (event.clientY - mouseY) * 0.01;
+        rotY += (event.clientX - mouseX) * 0.01;
+        mouseX = event.clientX;
+        mouseY = event.clientY;
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      camera.rotation.x = rotX;
+      camera.rotation.y = rotY;
+      jellyfish.position.x = Math.sin(Date.now() * 0.001) * 2;
+      jellyfish.position.y = Math.cos(Date.now() * 0.001) * 2;
+      for (let i = 0; i < fish.length; i++) {
+        fish[i].position.x += Math.random() * 0.01 - 0.005;
+        fish[i].position.y += Math.random() * 0.01 - 0.005;
+        fish[i].position.z += Math.random() * 0.01 - 0.005;
+      }
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
+```
