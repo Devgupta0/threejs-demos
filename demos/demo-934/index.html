@@ -1,0 +1,155 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Nebula Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, stars = [], gas = [], audioContext, audioOscillator;
+        let mouseDown = false, mouseX = 0, mouseY = 0, rotX = 0, rotY = 0;
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            for (let i = 0; i < 5000; i++) {
+                let star = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), new THREE.MeshBasicMaterial({ color: getRandomColor() }));
+                star.position.x = Math.random() * 10 - 5;
+                star.position.y = Math.random() * 10 - 5;
+                star.position.z = Math.random() * 10 - 5;
+                scene.add(star);
+                stars.push(star);
+            }
+
+            for (let i = 0; i < 100; i++) {
+                let gasGeometry = new THREE.PlaneGeometry(1, 1);
+                let gasMaterial = new THREE.MeshBasicMaterial({ color: getRandomColor(), transparent: true, opacity: 0.5 });
+                let gasMesh = new THREE.Mesh(gasGeometry, gasMaterial);
+                gasMesh.position.x = Math.random() * 10 - 5;
+                gasMesh.position.y = Math.random() * 10 - 5;
+                gasMesh.position.z = Math.random() * 10 - 5;
+                gasMesh.rotation.x = Math.random() * Math.PI;
+                gasMesh.rotation.y = Math.random() * Math.PI;
+                gasMesh.scale.x = Math.random() * 2;
+                gasMesh.scale.y = Math.random() * 2;
+                scene.add(gasMesh);
+                gas.push(gasMesh);
+            }
+
+            let background = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }));
+            background.position.z = -10;
+            scene.add(background);
+
+            let gradient = new THREE.Gradient();
+            gradient.addColorStop(0, 0x000000);
+            gradient.addColorStop(0.5, 0x111111);
+            gradient.addColorStop(1, 0x000000);
+            let gradientTexture = new THREE.CanvasTexture(gradientCanvas(100, 100, gradient));
+            let gradientMaterial = new THREE.MeshBasicMaterial({ map: gradientTexture });
+            let gradientMesh = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), gradientMaterial);
+            gradientMesh.position.z = -9;
+            scene.add(gradientMesh);
+
+            audioContext = new AudioContext();
+            audioOscillator = audioContext.createOscillator();
+            audioOscillator.type = 'sawtooth';
+            audioOscillator.frequency.value = 100;
+            audioOscillator.connect(audioContext.destination);
+            audioOscillator.start();
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            camera.rotation.x += (rotX - camera.rotation.x) * 0.05;
+            camera.rotation.y += (rotY - camera.rotation.y) * 0.05;
+
+            for (let i = 0; i < stars.length; i++) {
+                stars[i].rotation.x += 0.001;
+                stars[i].rotation.y += 0.001;
+            }
+
+            for (let i = 0; i < gas.length; i++) {
+                gas[i].rotation.x += 0.001;
+                gas[i].rotation.y += 0.001;
+            }
+
+            audioOscillator.frequency.value = 100 + Math.sin(Date.now() * 0.001) * 50;
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            mouseDown = true;
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (mouseDown) {
+                rotX += (event.clientY - mouseY) * 0.01;
+                rotY += (event.clientX - mouseX) * 0.01;
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            }
+        }
+
+        function onMouseUp(event) {
+            mouseDown = false;
+        }
+
+        function getRandomColor() {
+            return new THREE.Color(Math.random(), Math.random(), Math.random()).getHex();
+        }
+
+        function gradientCanvas(width, height, gradient) {
+            let canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            let ctx = canvas.getContext('2d');
+            let gradientCtx = ctx.createLinearGradient(0, 0, 0, height);
+            gradientCtx.addColorStop(0, `rgb(${gradient.addColorStop(0, 0x000000)})`);
+            gradientCtx.addColorStop(0.5, `rgb(${gradient.addColorStop(0.5, 0x111111)})`);
+            gradientCtx.addColorStop(1, `rgb(${gradient.addColorStop(1, 0x000000)})`);
+            ctx.fillStyle = gradientCtx;
+            ctx.fillRect(0, 0, width, height);
+            return canvas;
+        }
+
+        init();
+    </script>
+</body>
+</html>
+```
