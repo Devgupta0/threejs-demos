@@ -1,0 +1,119 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mystical Underwater Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Mystical Underwater Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish, shipwreck, seaweed, fish;
+        let mouseDown = false, prevMouse = { x: 0, y: 0 };
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const ambientLight = new THREE.AmbientLight(0x444444);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(0, 0, 5);
+        scene.add(pointLight);
+
+        const jellyfishGeometry = new THREE.SphereGeometry(1, 32, 32);
+        const jellyfishMaterial = new THREE.MeshBasicMaterial({ color: 0x66ccff });
+        jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+        jellyfish.scale.set(2, 2, 2);
+        scene.add(jellyfish);
+
+        const shipwreckGeometry = new THREE.BoxGeometry(5, 2, 5);
+        const shipwreckMaterial = new THREE.MeshBasicMaterial({ color: 0x997744 });
+        shipwreck = new THREE.Mesh(shipwreckGeometry, shipwreckMaterial);
+        shipwreck.position.set(0, -2, 0);
+        scene.add(shipwreck);
+
+        const seaweedGeometry = new THREE.PlaneGeometry(1, 5);
+        const seaweedMaterial = new THREE.MeshBasicMaterial({ color: 0x33cc33 });
+        seaweed = new THREE.Mesh(seaweedGeometry, seaweedMaterial);
+        seaweed.position.set(2, -2, 0);
+        seaweed.rotation.set(0, Math.PI / 4, 0);
+        scene.add(seaweed);
+
+        const fishGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+        const fishMaterial = new THREE.MeshBasicMaterial({ color: 0x99ffff });
+        for (let i = 0; i < 100; i++) {
+            fish = new THREE.Mesh(fishGeometry, fishMaterial);
+            fish.position.set(Math.random() * 10 - 5, Math.random() * 5 - 2.5, Math.random() * 10 - 5);
+            scene.add(fish);
+        }
+
+        for (let i = 0; i < 10; i++) {
+            const smallJellyfishGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+            const smallJellyfishMaterial = new THREE.MeshBasicMaterial({ color: 0x66ccff });
+            const smallJellyfish = new THREE.Mesh(smallJellyfishGeometry, smallJellyfishMaterial);
+            smallJellyfish.position.set(Math.random() * 5 - 2.5, Math.random() * 5 - 2.5, Math.random() * 5 - 2.5);
+            scene.add(smallJellyfish);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            jellyfish.rotation.set(jellyfish.rotation.x + 0.01, jellyfish.rotation.y + 0.01, jellyfish.rotation.z + 0.01);
+            seaweed.rotation.set(seaweed.rotation.x, seaweed.rotation.y + 0.01, seaweed.rotation.z);
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            mouseDown = true;
+            prevMouse = { x: event.clientX, y: event.clientY };
+        }
+
+        function onMouseUp(event) {
+            mouseDown = false;
+        }
+
+        function onMouseMove(event) {
+            if (mouseDown) {
+                const deltaMouse = { x: event.clientX - prevMouse.x, y: event.clientY - prevMouse.y };
+                camera.rotation.set(camera.rotation.x + deltaMouse.y * 0.01, camera.rotation.y + deltaMouse.x * 0.01, camera.rotation.z);
+                prevMouse = { x: event.clientX, y: event.clientY };
+            }
+        }
+
+        document.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mouseup', onMouseUp);
+        document.addEventListener('mousemove', onMouseMove);
+
+        animate();
+    </script>
+</body>
+</html>
+```
