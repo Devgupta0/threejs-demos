@@ -1,0 +1,160 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Abandoned Underwater Research Facility</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+      overflow: hidden;
+    }
+    #title {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-family: monospace;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div id="title">Abandoned Underwater Research Facility</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, fish, seaCreatures, dragStart = null, dragEnd = null;
+    const canvas = document.createElement('canvas');
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    // Initialize scene, camera, and renderer
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
+    renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Add some ambient light
+    const ambientLight = new THREE.AmbientLight(0x444444);
+    scene.add(ambientLight);
+
+    // Create the sun
+    const sun = new THREE.DirectionalLight(0xffcc00, 1);
+    sun.position.set(0, 0, 1);
+    scene.add(sun);
+
+    // Create the sea floor
+    const seaFloorGeometry = new THREE.PlaneGeometry(100, 100);
+    const seaFloorMaterial = new THREE.MeshPhongMaterial({ color: 0x112233, side: THREE.DoubleSide });
+    const seaFloor = new THREE.Mesh(seaFloorGeometry, seaFloorMaterial);
+    seaFloor.rotation.x = -Math.PI / 2;
+    seaFloor.position.y = -5;
+    scene.add(seaFloor);
+
+    // Create the research facility
+    const facilityGeometry = new THREE.BoxGeometry(2, 2, 2);
+    const facilityMaterial = new THREE.MeshPhongMaterial({ color: 0x665544 });
+    for (let i = 0; i < 10; i++) {
+      const facility = new THREE.Mesh(facilityGeometry, facilityMaterial);
+      facility.position.x = Math.random() * 10 - 5;
+      facility.position.y = Math.random() * 2 - 1;
+      facility.position.z = Math.random() * 10 - 5;
+      scene.add(facility);
+    }
+
+    // Create the bioluminescent marine life
+    const seaCreatureGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+    const seaCreatureMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00, emissive: 0x00ff00 });
+    seaCreatures = [];
+    for (let i = 0; i < 100; i++) {
+      const seaCreature = new THREE.Mesh(seaCreatureGeometry, seaCreatureMaterial);
+      seaCreature.position.x = Math.random() * 10 - 5;
+      seaCreature.position.y = Math.random() * 2 - 1;
+      seaCreature.position.z = Math.random() * 10 - 5;
+      scene.add(seaCreature);
+      seaCreatures.push(seaCreature);
+    }
+
+    // Create the school of fish
+    const fishGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+    const fishMaterial = new THREE.MeshPhongMaterial({ color: 0x4444ff, emissive: 0x4444ff });
+    fish = [];
+    for (let i = 0; i < 1000; i++) {
+      const fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+      fishMesh.position.x = Math.random() * 10 - 5;
+      fishMesh.position.y = Math.random() * 2 - 1;
+      fishMesh.position.z = Math.random() * 10 - 5;
+      scene.add(fishMesh);
+      fish.push(fishMesh);
+    }
+
+    // Handle mouse events
+    canvas.addEventListener('mousedown', (event) => {
+      dragStart = {
+        x: event.clientX,
+        y: event.clientY
+      };
+    });
+    canvas.addEventListener('mousemove', (event) => {
+      if (dragStart) {
+        dragEnd = {
+          x: event.clientX,
+          y: event.clientY
+        };
+        const dx = dragEnd.x - dragStart.x;
+        const dy = dragEnd.y - dragStart.y;
+        camera.rotation.x += dy * 0.01;
+        camera.rotation.y += dx * 0.01;
+        dragStart = dragEnd;
+      }
+    });
+    canvas.addEventListener('mouseup', () => {
+      dragStart = null;
+      dragEnd = null;
+    });
+
+    // Animate the scene
+    function animate() {
+      requestAnimationFrame(animate);
+      // Animate the fish
+      for (let i = 0; i < fish.length; i++) {
+        fish[i].position.x += Math.random() * 0.01 - 0.005;
+        fish[i].position.y += Math.random() * 0.01 - 0.005;
+        fish[i].position.z += Math.random() * 0.01 - 0.005;
+        if (fish[i].position.x > 5 || fish[i].position.x < -5) {
+          fish[i].position.x = Math.random() * 10 - 5;
+        }
+        if (fish[i].position.y > 2 || fish[i].position.y < -2) {
+          fish[i].position.y = Math.random() * 2 - 1;
+        }
+        if (fish[i].position.z > 5 || fish[i].position.z < -5) {
+          fish[i].position.z = Math.random() * 10 - 5;
+        }
+      }
+      // Animate the bioluminescent marine life
+      for (let i = 0; i < seaCreatures.length; i++) {
+        seaCreatures[i].position.x += Math.random() * 0.001 - 0.0005;
+        seaCreatures[i].position.y += Math.random() * 0.001 - 0.0005;
+        seaCreatures[i].position.z += Math.random() * 0.001 - 0.0005;
+        if (seaCreatures[i].position.x > 5 || seaCreatures[i].position.x < -5) {
+          seaCreatures[i].position.x = Math.random() * 10 - 5;
+        }
+        if (seaCreatures[i].position.y > 2 || seaCreatures[i].position.y < -2) {
+          seaCreatures[i].position.y = Math.random() * 2 - 1;
+        }
+        if (seaCreatures[i].position.z > 5 || seaCreatures[i].position.z < -5) {
+          seaCreatures[i].position.z = Math.random() * 10 - 5;
+        }
+      }
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
+```
