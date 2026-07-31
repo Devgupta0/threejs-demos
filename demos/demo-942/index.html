@@ -1,0 +1,131 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardust Vortex</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Stardust Vortex</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish, vortex;
+        let drag = false;
+        let prevX, prevY;
+        let rotation = { x: 0, y: 0 };
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            camera.position.z = 5;
+
+            const ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            const geometry = new THREE.SphereGeometry(1, 32, 32);
+            const material = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.5
+            });
+            jellyfish = new THREE.Mesh(geometry, material);
+            scene.add(jellyfish);
+
+            vortex = new THREE.Group();
+            scene.add(vortex);
+
+            for (let i = 0; i < 1000; i++) {
+                const particle = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(Math.random(), Math.random(), Math.random())
+                }));
+                particle.position.set(Math.random() * 5 - 2.5, Math.random() * 5 - 2.5, Math.random() * 5 - 2.5);
+                vortex.add(particle);
+            }
+
+            window.addEventListener('mousedown', (e) => {
+                drag = true;
+                prevX = e.clientX;
+                prevY = e.clientY;
+            });
+
+            window.addEventListener('mouseup', () => {
+                drag = false;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (drag) {
+                    rotation.x += (e.clientY - prevY) * 0.01;
+                    rotation.y += (e.clientX - prevX) * 0.01;
+                    prevX = e.clientX;
+                    prevY = e.clientY;
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            jellyfish.position.x = Math.sin(Date.now() * 0.001) * 2;
+            jellyfish.position.y = Math.cos(Date.now() * 0.001) * 2;
+
+            for (let i = 0; i < vortex.children.length; i++) {
+                const particle = vortex.children[i];
+                particle.position.x += Math.random() * 0.01 - 0.005;
+                particle.position.y += Math.random() * 0.01 - 0.005;
+                particle.position.z += Math.random() * 0.01 - 0.005;
+
+                if (particle.position.x > 2.5 || particle.position.x < -2.5) {
+                    particle.position.x = Math.random() * 5 - 2.5;
+                }
+                if (particle.position.y > 2.5 || particle.position.y < -2.5) {
+                    particle.position.y = Math.random() * 5 - 2.5;
+                }
+                if (particle.position.z > 2.5 || particle.position.z < -2.5) {
+                    particle.position.z = Math.random() * 5 - 2.5;
+                }
+            }
+
+            camera.rotation.x = rotation.x;
+            camera.rotation.y = rotation.y;
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
