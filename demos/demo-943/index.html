@@ -1,0 +1,133 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jellyfish in Vortex</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Jellyfish in Vortex</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish, vortex, ocean;
+        let rotX = 0, rotY = 0;
+        let dragging = false;
+        let prevX, prevY;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            camera.position.z = 5;
+
+            const jellyfishGeometry = new THREE.SphereGeometry(1, 64, 64);
+            const jellyfishMaterial = new THREE.MeshBasicMaterial({
+                color: 0x88ccff,
+                transparent: true,
+                opacity: 0.7
+            });
+            jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+            scene.add(jellyfish);
+
+            const vortexGeometry = new THREE.BufferGeometry();
+            const positions = [];
+            for (let i = 0; i < 10000; i++) {
+                positions.push(Math.random() * 2 - 1);
+                positions.push(Math.random() * 2 - 1);
+                positions.push(Math.random() * 2 - 1);
+            }
+            vortexGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            const vortexMaterial = new THREE.PointsMaterial({
+                color: 0x6633cc,
+                size: 0.1
+            });
+            vortex = new THREE.Points(vortexGeometry, vortexMaterial);
+            scene.add(vortex);
+
+            const oceanGeometry = new THREE.PlaneGeometry(10, 10, 64, 64);
+            const oceanMaterial = new THREE.MeshBasicMaterial({
+                color: 0x2244aa,
+                transparent: true,
+                opacity: 0.5
+            });
+            ocean = new THREE.Mesh(oceanGeometry, oceanMaterial);
+            ocean.rotation.x = -Math.PI / 2;
+            ocean.position.y = -2;
+            scene.add(ocean);
+
+            const ambientLight = new THREE.AmbientLight(0x333333);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1, 10);
+            pointLight.position.set(0, 0, 2);
+            scene.add(pointLight);
+
+            document.addEventListener('mousedown', (event) => {
+                dragging = true;
+                prevX = event.clientX;
+                prevY = event.clientY;
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if (dragging) {
+                    rotX += (event.clientY - prevY) * 0.01;
+                    rotY += (event.clientX - prevX) * 0.01;
+                    prevX = event.clientX;
+                    prevY = event.clientY;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                dragging = false;
+            });
+
+            document.addEventListener('wheel', (event) => {
+                camera.position.z += event.deltaY * 0.1;
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            jellyfish.position.y = Math.sin(Date.now() * 0.01) * 0.5;
+            jellyfish.rotation.x = Date.now() * 0.01;
+            jellyfish.rotation.y = Date.now() * 0.01;
+
+            vortex.rotation.x = Date.now() * 0.001;
+            vortex.rotation.y = Date.now() * 0.001;
+
+            ocean.position.x = Math.sin(Date.now() * 0.01) * 0.1;
+            ocean.position.z = Math.cos(Date.now() * 0.01) * 0.1;
+
+            camera.rotation.x = rotX;
+            camera.rotation.y = rotY;
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
