@@ -1,0 +1,161 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Scene</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish = [], seaweed = [], plankton = [];
+        let rotateX = 0, rotateY = 0;
+        let mouseX = 0, mouseY = 0;
+        let mouseDownX = 0, mouseDownY = 0;
+        let isMouseDown = false;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            for (let i = 0; i < 50; i++) {
+                let jelly = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.2, 16, 16),
+                    new THREE.MeshPhongMaterial({
+                        color: new THREE.Color(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1),
+                        transparent: true,
+                        opacity: 0.7
+                    })
+                );
+                jelly.position.x = Math.random() * 10 - 5;
+                jelly.position.y = Math.random() * 10 - 5;
+                jelly.position.z = Math.random() * 10 - 5;
+                jellyfish.push(jelly);
+                scene.add(jelly);
+            }
+
+            for (let i = 0; i < 100; i++) {
+                let plank = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.01, 8, 8),
+                    new THREE.MeshBasicMaterial({
+                        color: new THREE.Color(0, 0.5, 1)
+                    })
+                );
+                plank.position.x = Math.random() * 10 - 5;
+                plank.position.y = Math.random() * 10 - 5;
+                plank.position.z = Math.random() * 10 - 5;
+                plankton.push(plank);
+                scene.add(plank);
+            }
+
+            for (let i = 0; i < 10; i++) {
+                let weed = new THREE.Mesh(
+                    new THREE.PlaneGeometry(0.2, 2),
+                    new THREE.MeshPhongMaterial({
+                        color: new THREE.Color(0, 0.5, 0.2)
+                    })
+                );
+                weed.position.x = Math.random() * 10 - 5;
+                weed.position.y = -2;
+                weed.position.z = Math.random() * 10 - 5;
+                seaweed.push(weed);
+                scene.add(weed);
+            }
+
+            let ambientLight = new THREE.AmbientLight(0x444444);
+            scene.add(ambientLight);
+
+            let pointLight = new THREE.PointLight(0xffffff, 1, 10);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            rotateX += (mouseY - mouseY) * 0.01;
+            rotateY += (mouseX - mouseX) * 0.01;
+
+            camera.rotation.x = rotateX;
+            camera.rotation.y = rotateY;
+
+            for (let i = 0; i < jellyfish.length; i++) {
+                let jelly = jellyfish[i];
+                jelly.position.y += Math.sin(Date.now() * 0.01 + i) * 0.01;
+                jelly.scale.x = Math.sin(Date.now() * 0.01 + i) * 0.2 + 0.8;
+                jelly.scale.y = jelly.scale.x;
+                jelly.scale.z = jelly.scale.x;
+            }
+
+            for (let i = 0; i < seaweed.length; i++) {
+                let weed = seaweed[i];
+                weed.position.y += Math.sin(Date.now() * 0.01 + i) * 0.01;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            isMouseDown = true;
+            mouseDownX = event.clientX;
+            mouseDownY = event.clientY;
+        }
+
+        function onMouseMove(event) {
+            if (isMouseDown) {
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+                rotateX += (mouseY - mouseDownY) * 0.01;
+                rotateY += (mouseX - mouseDownX) * 0.01;
+                mouseDownX = mouseX;
+                mouseDownY = mouseY;
+            }
+        }
+
+        function onMouseUp() {
+            isMouseDown = false;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+</body>
+</html>
+```
