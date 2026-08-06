@@ -1,0 +1,157 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater Garden</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Mystical Underwater Garden</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, fish, flora, fauna;
+        let rotX = 0, rotY = 0;
+        let mouseDown = false, mousePos = { x: 0, y: 0 };
+        let clock = new THREE.Clock();
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Add moonlight
+            let moonLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            moonLight.position.set(0, 1, 0);
+            scene.add(moonLight);
+
+            // Add ambient light
+            let ambientLight = new THREE.AmbientLight(0x444444, 0.5);
+            scene.add(ambientLight);
+
+            // Add fish
+            fish = [];
+            for (let i = 0; i < 50; i++) {
+                let fishGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+                let fishMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, 1),
+                    transparent: true,
+                    opacity: 0.5
+                });
+                let fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+                fishMesh.position.set(Math.random() * 10 - 5, Math.random() * 5 - 2.5, Math.random() * 10 - 5);
+                fishMesh.rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
+                fish.push(fishMesh);
+                scene.add(fishMesh);
+            }
+
+            // Add flora
+            flora = [];
+            for (let i = 0; i < 20; i++) {
+                let floraGeometry = new THREE.TorusKnotGeometry(0.5, 0.2, 128, 32);
+                let floraMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(Math.random() * 0.5 + 0.5, 1, Math.random() * 0.5 + 0.5),
+                    transparent: true,
+                    opacity: 0.5
+                });
+                let floraMesh = new THREE.Mesh(floraGeometry, floraMaterial);
+                floraMesh.position.set(Math.random() * 10 - 5, -2.5, Math.random() * 10 - 5);
+                floraMesh.rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
+                flora.push(floraMesh);
+                scene.add(floraMesh);
+            }
+
+            // Add fauna
+            fauna = [];
+            for (let i = 0; i < 20; i++) {
+                let faunaGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+                let faunaMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(1, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5),
+                    transparent: true,
+                    opacity: 0.5
+                });
+                let faunaMesh = new THREE.Mesh(faunaGeometry, faunaMaterial);
+                faunaMesh.position.set(Math.random() * 10 - 5, -1.5, Math.random() * 10 - 5);
+                faunaMesh.rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
+                fauna.push(faunaMesh);
+                scene.add(faunaMesh);
+            }
+
+            camera.position.set(0, 0, 5);
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            let deltaTime = clock.getDelta();
+
+            // Rotate fish
+            for (let i = 0; i < fish.length; i++) {
+                fish[i].rotation.y += deltaTime * 2;
+                fish[i].position.x += Math.sin(fish[i].rotation.y) * deltaTime * 2;
+                fish[i].position.z += Math.cos(fish[i].rotation.y) * deltaTime * 2;
+                if (fish[i].position.x > 5 || fish[i].position.x < -5 || fish[i].position.z > 5 || fish[i].position.z < -5) {
+                    fish[i].position.x = Math.random() * 10 - 5;
+                    fish[i].position.z = Math.random() * 10 - 5;
+                }
+            }
+
+            // Rotate flora
+            for (let i = 0; i < flora.length; i++) {
+                flora[i].rotation.y += deltaTime * 0.5;
+            }
+
+            // Rotate fauna
+            for (let i = 0; i < fauna.length; i++) {
+                fauna[i].rotation.y += deltaTime * 0.5;
+            }
+
+            // Rotate camera
+            camera.rotation.x += (rotX - camera.rotation.x) * deltaTime * 5;
+            camera.rotation.y += (rotY - camera.rotation.y) * deltaTime * 5;
+
+            renderer.render(scene, camera);
+        }
+
+        function onMouseDown(event) {
+            mouseDown = true;
+            mousePos = { x: event.clientX, y: event.clientY };
+        }
+
+        function onMouseMove(event) {
+            if (mouseDown) {
+                rotX += (event.clientY - mousePos.y) * 0.01;
+                rotY += (event.clientX - mousePos.x) * 0.01;
+                mousePos = { x: event.clientX, y: event.clientY };
+            }
+        }
+
+        function onMouseUp() {
+            mouseDown = false;
+        }
+    </script>
+</body>
+</html>
+```
