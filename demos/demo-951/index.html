@@ -1,0 +1,107 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underwater City</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: monospace;
+        }
+        #scene-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-title">Underwater City</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish, fish, dragging = false, lastMouse = [0, 0];
+        const canvas = document.createElement('canvas');
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        const ambientLight = new THREE.AmbientLight(0x444444);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.set(0, 0, 5);
+        scene.add(pointLight);
+
+        const geometry = new THREE.SphereGeometry(1, 32, 32);
+        const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        jellyfish = new THREE.Mesh(geometry, material);
+        jellyfish.scale.set(5, 5, 5);
+        scene.add(jellyfish);
+
+        const fishGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+        const fishMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        fish = [];
+        for (let i = 0; i < 100; i++) {
+            const fishMesh = new THREE.Mesh(fishGeometry, fishMaterial);
+            fishMesh.position.set(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+            scene.add(fishMesh);
+            fish.push(fishMesh);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (dragging) {
+                const deltaMouse = [event.clientX - lastMouse[0], event.clientY - lastMouse[1]];
+                camera.rotation.x += deltaMouse[1] * 0.01;
+                camera.rotation.y += deltaMouse[0] * 0.01;
+                lastMouse = [event.clientX, event.clientY];
+            }
+            jellyfish.rotation.x += 0.01;
+            jellyfish.rotation.y += 0.01;
+            for (let i = 0; i < fish.length; i++) {
+                fish[i].position.x += Math.random() * 0.01 - 0.005;
+                fish[i].position.y += Math.random() * 0.01 - 0.005;
+                fish[i].position.z += Math.random() * 0.01 - 0.005;
+            }
+            renderer.render(scene, camera);
+        }
+
+        canvas.addEventListener('mousedown', (event) => {
+            dragging = true;
+            lastMouse = [event.clientX, event.clientY];
+        });
+        canvas.addEventListener('mouseup', () => {
+            dragging = false;
+        });
+        canvas.addEventListener('mousemove', (event) => {
+            if (dragging) {
+                const deltaMouse = [event.clientX - lastMouse[0], event.clientY - lastMouse[1]];
+                camera.rotation.x += deltaMouse[1] * 0.01;
+                camera.rotation.y += deltaMouse[0] * 0.01;
+                lastMouse = [event.clientX, event.clientY];
+            }
+        });
+
+        animate();
+    </script>
+</body>
+</html>
+```
