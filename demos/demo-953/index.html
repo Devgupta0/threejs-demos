@@ -1,0 +1,140 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dreamscape</title>
+  <style>
+    body { margin: 0; background-color: #000; }
+    #title { position: absolute; top: 10px; left: 10px; color: #fff; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div id="title">Dreamscape</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    let scene, camera, renderer, jellyfish, strands, particles;
+    let rotX = 0, rotY = 0;
+    let isDragging = false;
+    let dragStartX, dragStartY;
+
+    init();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 5;
+
+      renderer = new THREE.WebGLRenderer({
+        canvas: document.createElement('canvas'),
+        antialias: true
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Gradient background
+      const gradient = new THREE.Gradient();
+      gradient.addColor(0, new THREE.Color(0x0000ff));
+      gradient.addColor(1, new THREE.Color(0x800080));
+      scene.background = new THREE.CanvasTexture(gradient.getCanvas(256, 128));
+
+      // Jellyfish
+      const jellyfishGeometry = new THREE.SphereGeometry(1, 32, 32);
+      const jellyfishMaterial = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(0xffffff),
+        transparent: true,
+        opacity: 0.5
+      });
+      jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+      scene.add(jellyfish);
+
+      // Strands
+      strands = [];
+      for (let i = 0; i < 100; i++) {
+        const strandGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(100 * 3);
+        for (let j = 0; j < 100; j++) {
+          positions[j * 3] = Math.random() * 2 - 1;
+          positions[j * 3 + 1] = Math.random() * 2 - 1;
+          positions[j * 3 + 2] = Math.random() * 2 - 1;
+        }
+        strandGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const strandMaterial = new THREE.LineBasicMaterial({
+          color: new THREE.Color(0xffffff),
+          linewidth: 2,
+          transparent: true,
+          opacity: 0.5
+        });
+        const strand = new THREE.Line(strandGeometry, strandMaterial);
+        scene.add(strand);
+        strands.push(strand);
+      }
+
+      // Particles
+      particles = [];
+      for (let i = 0; i < 1000; i++) {
+        const particleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const particleMaterial = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(0xffffff),
+          transparent: true,
+          opacity: 0.5
+        });
+        const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+        particle.position.x = Math.random() * 2 - 1;
+        particle.position.y = Math.random() * 2 - 1;
+        particle.position.z = Math.random() * 2 - 1;
+        scene.add(particle);
+        particles.push(particle);
+      }
+
+      document.addEventListener('mousedown', (event) => {
+        isDragging = true;
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+      });
+
+      document.addEventListener('mousemove', (event) => {
+        if (isDragging) {
+          rotX += (event.clientY - dragStartY) * 0.01;
+          rotY += (event.clientX - dragStartX) * 0.01;
+          dragStartX = event.clientX;
+          dragStartY = event.clientY;
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      jellyfish.rotation.x += 0.01;
+      jellyfish.rotation.y += 0.01;
+
+      for (let i = 0; i < strands.length; i++) {
+        const strand = strands[i];
+        strand.rotation.x += 0.01;
+        strand.rotation.y += 0.01;
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
+        particle.position.x += Math.random() * 0.01 - 0.005;
+        particle.position.y += Math.random() * 0.01 - 0.005;
+        particle.position.z += Math.random() * 0.01 - 0.005;
+      }
+
+      camera.rotation.x = rotX;
+      camera.rotation.y = rotY;
+
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
+```
