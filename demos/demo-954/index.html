@@ -1,0 +1,106 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Underwater Scene</title>
+    <style>
+        body { margin: 0; }
+        #title { position: absolute; top: 10px; left: 10px; font-family: monospace; color: white; }
+    </style>
+</head>
+<body>
+    <div id="title">Underwater Metropolis</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish = [], skyscraper, ambientLight, pointLight;
+        let dragStart = null, dragEnd = null;
+        let rotationX = 0, rotationY = 0;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 500;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            ambientLight = new THREE.AmbientLight(0x112233, 1);
+            scene.add(ambientLight);
+
+            pointLight = new THREE.PointLight(0x4499ff, 5, 1000);
+            pointLight.position.set(0, 200, 0);
+            scene.add(pointLight);
+
+            let geometry = new THREE.BoxGeometry(100, 200, 100);
+            let material = new THREE.MeshPhongMaterial({ color: 0x665533, shininess: 0 });
+            skyscraper = new THREE.Mesh(geometry, material);
+            skyscraper.position.set(0, -50, 0);
+            scene.add(skyscraper);
+
+            let coralGeometry = new THREE.SphereGeometry(10, 10, 10);
+            let coralMaterial = new THREE.MeshPhongMaterial({ color: 0xff9966, shininess: 0 });
+            for (let i = 0; i < 50; i++) {
+                let coral = new THREE.Mesh(coralGeometry, coralMaterial);
+                coral.position.set(Math.random() * 200 - 100, Math.random() * 100 - 50, Math.random() * 200 - 100);
+                skyscraper.add(coral);
+            }
+
+            let jellyfishGeometry = new THREE.SphereGeometry(10, 10, 10);
+            let jellyfishMaterial = new THREE.MeshPhongMaterial({ color: 0x66ccff, shininess: 100, transparent: true, opacity: 0.5 });
+            for (let i = 0; i < 20; i++) {
+                let jellyfishMesh = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+                jellyfishMesh.position.set(Math.random() * 200 - 100, Math.random() * 100 - 50, Math.random() * 200 - 100);
+                jellyfish.push({ mesh: jellyfishMesh, velocity: Math.random() * 2 - 1 });
+                scene.add(jellyfishMesh);
+            }
+
+            document.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        }
+
+        function onMouseDown(event) {
+            dragStart = { x: event.clientX, y: event.clientY };
+        }
+
+        function onMouseMove(event) {
+            if (dragStart) {
+                dragEnd = { x: event.clientX, y: event.clientY };
+            }
+        }
+
+        function onMouseUp(event) {
+            if (dragStart && dragEnd) {
+                rotationX += (dragEnd.y - dragStart.y) * 0.01;
+                rotationY += (dragEnd.x - dragStart.x) * 0.01;
+                dragStart = null;
+                dragEnd = null;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            camera.rotation.x = rotationX;
+            camera.rotation.y = rotationY;
+
+            for (let i = 0; i < jellyfish.length; i++) {
+                jellyfish[i].mesh.position.y += jellyfish[i].velocity;
+                if (jellyfish[i].mesh.position.y > 100 || jellyfish[i].mesh.position.y < -100) {
+                    jellyfish[i].velocity *= -1;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
