@@ -1,0 +1,116 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesmerizing Abyss</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+        #title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: monospace;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Mesmerizing Abyss</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer, jellyfish, particles, water;
+        let mouseX = 0, mouseY = 0;
+        let dragX = 0, dragY = 0;
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: document.createElement('canvas'),
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000);
+            document.body.appendChild(renderer.domElement);
+
+            const geometry = new THREE.SphereGeometry(1, 32, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+            jellyfish = new THREE.Mesh(geometry, material);
+            scene.add(jellyfish);
+
+            const particleGeometry = new THREE.SphereGeometry(0.1, 16, 8);
+            const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                particle.position.x = Math.random() * 2 - 1;
+                particle.position.y = Math.random() * 2 - 1;
+                particle.position.z = Math.random() * 2 - 1;
+                scene.add(particle);
+                particles.push(particle);
+            }
+
+            water = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 }));
+            water.rotation.x = -Math.PI / 2;
+            scene.add(water);
+
+            const ambientLight = new THREE.AmbientLight(0x222222);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xffffff, 1, 10);
+            pointLight.position.set(0, 0, 5);
+            scene.add(pointLight);
+
+            document.addEventListener('mousemove', (event) => {
+                if (event.buttons === 1) {
+                    dragX += event.movementX;
+                    dragY += event.movementY;
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            camera.rotation.x += dragY * 0.01;
+            camera.rotation.y += dragX * 0.01;
+            dragX = 0;
+            dragY = 0;
+
+            jellyfish.scale.x = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+            jellyfish.scale.y = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+            jellyfish.scale.z = 1 + Math.sin(Date.now() * 0.001) * 0.1;
+
+            for (let i = 0; i < particles.length; i++) {
+                const particle = particles[i];
+                particle.position.x += Math.random() * 0.01 - 0.005;
+                particle.position.y += Math.random() * 0.01 - 0.005;
+                particle.position.z += Math.random() * 0.01 - 0.005;
+                particle.rotation.x += Math.random() * 0.01;
+                particle.rotation.y += Math.random() * 0.01;
+                if (particle.position.x > 1 || particle.position.x < -1 || particle.position.y > 1 || particle.position.y < -1 || particle.position.z > 1 || particle.position.z < -1) {
+                    particle.position.x = Math.random() * 2 - 1;
+                    particle.position.y = Math.random() * 2 - 1;
+                    particle.position.z = Math.random() * 2 - 1;
+                }
+            }
+
+            water.position.y = Math.sin(Date.now() * 0.01) * 0.1;
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
+```
