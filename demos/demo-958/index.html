@@ -1,0 +1,149 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesmerizing Jellyfish Scene</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+        #scene-title {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: monospace;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-title">Dreamlike Jellyfish Scene</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Initialize scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Create jellyfish
+        const jellyfishGeometry = new THREE.SphereGeometry(2, 32, 32);
+        const jellyfishMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.5
+        });
+        const jellyfish = new THREE.Mesh(jellyfishGeometry, jellyfishMaterial);
+        scene.add(jellyfish);
+
+        // Create sea creatures
+        const seaCreatureGeometry = new THREE.SphereGeometry(0.1, 16, 16);
+        const seaCreatureMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.5
+        });
+        for (let i = 0; i < 100; i++) {
+            const seaCreature = new THREE.Mesh(seaCreatureGeometry, seaCreatureMaterial);
+            seaCreature.position.x = Math.random() * 10 - 5;
+            seaCreature.position.y = Math.random() * 10 - 5;
+            seaCreature.position.z = Math.random() * 10 - 5;
+            scene.add(seaCreature);
+        }
+
+        // Create seaweed
+        const seaweedGeometry = new THREE.PlaneGeometry(1, 10);
+        const seaweedMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.5
+        });
+        for (let i = 0; i < 20; i++) {
+            const seaweed = new THREE.Mesh(seaweedGeometry, seaweedMaterial);
+            seaweed.position.x = Math.random() * 10 - 5;
+            seaweed.position.y = Math.random() * 10 - 5;
+            seaweed.position.z = Math.random() * 10 - 5;
+            seaweed.rotation.x = Math.random() * Math.PI;
+            scene.add(seaweed);
+        }
+
+        // Create ocean surface
+        const oceanSurfaceGeometry = new THREE.PlaneGeometry(100, 100);
+        const oceanSurfaceMaterial = new THREE.MeshBasicMaterial({
+            color: 0x0000ff,
+            transparent: true,
+            opacity: 0.1
+        });
+        const oceanSurface = new THREE.Mesh(oceanSurfaceGeometry, oceanSurfaceMaterial);
+        oceanSurface.position.y = 10;
+        scene.add(oceanSurface);
+
+        // Create ambient light
+        const ambientLight = new THREE.AmbientLight(0x111111);
+        scene.add(ambientLight);
+
+        // Create point light
+        const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+        pointLight.position.y = 10;
+        scene.add(pointLight);
+
+        // Initialize camera position
+        camera.position.z = 5;
+
+        // Initialize mouse drag variables
+        let isDragging = false;
+        let previousMousePosition = null;
+
+        // Handle mouse down event
+        document.addEventListener('mousedown', (event) => {
+            isDragging = true;
+            previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        });
+
+        // Handle mouse up event
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            previousMousePosition = null;
+        });
+
+        // Handle mouse move event
+        document.addEventListener('mousemove', (event) => {
+            if (isDragging) {
+                const deltaMousePosition = {
+                    x: event.clientX - previousMousePosition.x,
+                    y: event.clientY - previousMousePosition.y
+                };
+                camera.rotation.x += deltaMousePosition.y * 0.01;
+                camera.rotation.y += deltaMousePosition.x * 0.01;
+                previousMousePosition = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            jellyfish.rotation.x += 0.01;
+            jellyfish.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
+```
