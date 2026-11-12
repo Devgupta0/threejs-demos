@@ -4,143 +4,151 @@
 <meta charset="UTF-8">
 <title>Three.js Demo</title>
 <style>
-  html, body { margin:0; overflow:hidden; background:#000; }
-  #title {
-    position:absolute;
-    top:10px;
-    left:10px;
-    color:#fff;
-    font-family:monospace;
-    font-size:18px;
-    pointer-events:none;
-    z-index:1;
-  }
+    html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
+    #title {
+        position:absolute;
+        top:10px; left:10px;
+        color:#fff;
+        font-family:monospace;
+        font-size:14px;
+        pointer-events:none;
+        user-select:none;
+    }
 </style>
 </head>
 <body>
-<div id="title">Three.js Impressive Scene</div>
+<div id="title">Three.js Demo – Drag to rotate</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// ----- Basic setup ---------------------------------------------------------
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000);
+(() => {
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(
-  60,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-camera.position.set(0, 2, 6);
+    // Scene & Camera
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 2, 6);
+    scene.add(camera);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+    // Resize handling
+    window.addEventListener('resize', () => {
+        const w = window.innerWidth, h = window.innerHeight;
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+    });
 
-// ----- Lights --------------------------------------------------------------
-const hemiLight = new THREE.HemisphereLight(0xeeeeff, 0x080820, 1.2);
-scene.add(hemiLight);
+    // Lighting
+    const ambient = new THREE.AmbientLight(0x404040, 1.5);
+    scene.add(ambient);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+    dirLight.position.set(5,10,7);
+    scene.add(dirLight);
+    const pointLight = new THREE.PointLight(0xffaa00, 1.2, 100);
+    pointLight.position.set(-5,5,5);
+    scene.add(pointLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-dirLight.position.set(5, 10, 7);
-scene.add(dirLight);
+    // Group to rotate
+    const group = new THREE.Group();
+    scene.add(group);
 
-// ----- Geometry -------------------------------------------------------------
-const group = new THREE.Group();
-scene.add(group);
+    // Add some visually impressive objects
+    const geometry1 = new THREE.TorusKnotGeometry(1, 0.3, 200, 32);
+    const material1 = new THREE.MeshStandardMaterial({ color: 0x156289, emissive: 0x072534, metalness: 0.7, roughness: 0.2 });
+    const torusKnot = new THREE.Mesh(geometry1, material1);
+    group.add(torusKnot);
 
-// A glowing torus knot
-const knotGeo = new THREE.TorusKnotGeometry(1, 0.35, 150, 20);
-const knotMat = new THREE.MeshStandardMaterial({
-  color: 0xff6f61,
-  metalness: 0.7,
-  roughness: 0.2,
-  emissive: 0x330000,
-  emissiveIntensity: 0.5
-});
-const knot = new THREE.Mesh(knotGeo, knotMat);
-group.add(knot);
+    const geometry2 = new THREE.IcosahedronGeometry(0.8, 0);
+    const material2 = new THREE.MeshStandardMaterial({ color: 0xffc107, emissive: 0x331100, metalness: 0.4, roughness: 0.5 });
+    const ico = new THREE.Mesh(geometry2, material2);
+    ico.position.set(2.5, 0, 0);
+    group.add(ico);
 
-// A rotating sphere with reflective material
-const sphereGeo = new THREE.SphereGeometry(0.6, 64, 64);
-const sphereMat = new THREE.MeshPhysicalMaterial({
-  color: 0x61a0ff,
-  metalness: 1,
-  roughness: 0,
-  clearcoat: 1,
-  clearcoatRoughness: 0.1,
-  reflectivity: 1
-});
-const sphere = new THREE.Mesh(sphereGeo, sphereMat);
-sphere.position.set(-2.5, 0, 0);
-group.add(sphere);
+    // Add a floor plane
+    const planeGeo = new THREE.PlaneGeometry(20,20);
+    const planeMat = new THREE.MeshStandardMaterial({ color: 0x222222, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(planeGeo, planeMat);
+    plane.rotation.x = -Math.PI/2;
+    plane.position.y = -1.5;
+    scene.add(plane);
 
-// Small floating cubes for extra flair
-for (let i = 0; i < 12; i++) {
-  const size = Math.random() * 0.2 + 0.1;
-  const geo = new THREE.BoxGeometry(size, size, size);
-  const mat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color().setHSL(Math.random(), 0.8, 0.5)
-  });
-  const cube = new THREE.Mesh(geo, mat);
-  cube.position.set(
-    (Math.random() - 0.5) * 6,
-    (Math.random() - 0.5) * 4,
-    (Math.random() - 0.5) * 6
-  );
-  group.add(cube);
-}
+    // Add some floating particles
+    const particles = new THREE.Group();
+    const particleGeo = new THREE.SphereGeometry(0.05, 8, 8);
+    const particleMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    for(let i=0;i<100;i++){
+        const p = new THREE.Mesh(particleGeo, particleMat);
+        p.position.set(
+            (Math.random()-0.5)*6,
+            Math.random()*3,
+            (Math.random()-0.5)*6
+        );
+        particles.add(p);
+    }
+    group.add(particles);
 
-// ----- Mouse drag rotation -------------------------------------------------
-let isDragging = false;
-let previousMouse = { x: 0, y: 0 };
-const rotationSpeed = 0.005;
+    // Mouse drag rotation
+    let isDragging = false;
+    let previousMouse = { x:0, y:0 };
+    const rotationSpeed = 0.005;
 
-renderer.domElement.addEventListener('pointerdown', (e) => {
-  isDragging = true;
-  previousMouse.x = e.clientX;
-  previousMouse.y = e.clientY;
-});
+    const onPointerDown = (e) => {
+        isDragging = true;
+        previousMouse.x = e.clientX;
+        previousMouse.y = e.clientY;
+    };
+    const onPointerMove = (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - previousMouse.x;
+        const deltaY = e.clientY - previousMouse.y;
+        group.rotation.y += deltaX * rotationSpeed;
+        group.rotation.x += deltaY * rotationSpeed;
+        previousMouse.x = e.clientX;
+        previousMouse.y = e.clientY;
+    };
+    const onPointerUp = () => { isDragging = false; };
 
-renderer.domElement.addEventListener('pointermove', (e) => {
-  if (!isDragging) return;
-  const deltaX = e.clientX - previousMouse.x;
-  const deltaY = e.clientY - previousMouse.y;
-  previousMouse.x = e.clientX;
-  previousMouse.y = e.clientY;
+    renderer.domElement.addEventListener('mousedown', onPointerDown);
+    renderer.domElement.addEventListener('mousemove', onPointerMove);
+    renderer.domElement.addEventListener('mouseup', onPointerUp);
+    renderer.domElement.addEventListener('mouseleave', onPointerUp);
 
-  // Rotate around world Y (horizontal drag) and X (vertical drag)
-  group.rotation.y += deltaX * rotationSpeed;
-  group.rotation.x += deltaY * rotationSpeed;
-  // Clamp X rotation to avoid flipping
-  group.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, group.rotation.x));
-});
+    // Touch support
+    renderer.domElement.addEventListener('touchstart', (e)=> {
+        if (e.touches.length===1){
+            const t = e.touches[0];
+            onPointerDown({clientX:t.clientX, clientY:t.clientY});
+        }
+    }, {passive:true});
+    renderer.domElement.addEventListener('touchmove', (e)=> {
+        if (e.touches.length===1){
+            const t = e.touches[0];
+            onPointerMove({clientX:t.clientX, clientY:t.clientY});
+        }
+    }, {passive:true});
+    renderer.domElement.addEventListener('touchend', onPointerUp);
 
-renderer.domElement.addEventListener('pointerup', () => { isDragging = false; });
-renderer.domElement.addEventListener('pointerleave', () => { isDragging = false; });
+    // Animation loop
+    const clock = new THREE.Clock();
+    function animate(){
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
 
-// ----- Resize handling ------------------------------------------------------
-window.addEventListener('resize', () => {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  renderer.setSize(w, h);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-});
+        // Slow auto-rotation
+        group.rotation.y += 0.1 * delta;
 
-// ----- Animation loop -------------------------------------------------------
-function animate() {
-  requestAnimationFrame(animate);
+        // Slight up-and-down bobbing for particles
+        particles.children.forEach((p,i)=>{
+            p.position.y += Math.sin(clock.elapsedTime*2 + i)*0.001;
+        });
 
-  // subtle auto‑rotation when not dragging
-  if (!isDragging) {
-    group.rotation.y += 0.001;
-  }
-
-  renderer.render(scene, camera);
-}
-animate();
+        renderer.render(scene, camera);
+    }
+    animate();
+})();
 </script>
 </body>
 </html>
