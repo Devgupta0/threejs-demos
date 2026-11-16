@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Three.js Demo</title>
+<style>
+    html, body { margin:0; overflow:hidden; height:100%; background:#000; }
+    #title {
+        position:absolute;
+        top:10px; left:10px;
+        color:#fff;
+        font-family:monospace;
+        font-size:18px;
+        pointer-events:none;
+        z-index:10;
+    }
+    canvas { display:block; }
+</style>
+</head>
+<body>
+<div id="title">Three.js Impressive Demo</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const radius = 20;
+    let lon = 0, lat = 0; // rotation angles in radians
+    let targetLon = 0, targetLat = 0;
+    camera.position.set(radius, 0, 0);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    // Lights
+    const ambient = new THREE.AmbientLight(0x404040, 2);
+    scene.add(ambient);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffaa33, 1.5);
+    dirLight1.position.set(5, 10, 7);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0x33aaff, 1);
+    dirLight2.position.set(-7, -5, -10);
+    scene.add(dirLight2);
+
+    // Objects
+    const group = new THREE.Group();
+    scene.add(group);
+
+    // Torus Knot
+    const torusGeom = new THREE.TorusKnotGeometry(3, 1, 200, 32);
+    const torusMat = new THREE.MeshStandardMaterial({ color: 0xff6699, metalness: 0.7, roughness: 0.2 });
+    const torus = new THREE.Mesh(torusGeom, torusMat);
+    torus.castShadow = true;
+    group.add(torus);
+
+    // Rotating inner sphere
+    const sphereGeom = new THREE.SphereGeometry(1.5, 32, 32);
+    const sphereMat = new THREE.MeshStandardMaterial({ color: 0x33ffdd, emissive: 0x112222, metalness: 0.5, roughness: 0.4 });
+    const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+    sphere.position.set(0, 0, 0);
+    group.add(sphere);
+
+    // Surrounding spikes
+    const spikeGeom = new THREE.ConeGeometry(0.2, 2, 8);
+    const spikeMat = new THREE.MeshStandardMaterial({ color: 0xffff33 });
+    for (let i = 0; i < 100; i++) {
+        const spike = new THREE.Mesh(spikeGeom, spikeMat);
+        const phi = Math.acos(2 * Math.random() - 1);
+        const theta = 2 * Math.PI * Math.random();
+        const r = 8 + Math.random() * 2;
+        spike.position.set(
+            r * Math.sin(phi) * Math.cos(theta),
+            r * Math.sin(phi) * Math.sin(theta),
+            r * Math.cos(phi)
+        );
+        spike.lookAt(0,0,0);
+        group.add(spike);
+    }
+
+    // Mouse interaction (orbit without OrbitControls)
+    let isDragging = false;
+    let prevX = 0, prevY = 0;
+
+    const onMouseDown = (e) => {
+        isDragging = true;
+        prevX = e.clientX;
+        prevY = e.clientY;
+    };
+
+    const onMouseMove = (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - prevX;
+        const deltaY = e.clientY - prevY;
+        prevX = e.clientX;
+        prevY = e.clientY;
+
+        // adjust target angles (sensitivity)
+        targetLon -= deltaX * 0.005;
+        targetLat -= deltaY * 0.005;
+        targetLat = Math.max(-Math.PI/2 + 0.01, Math.min(Math.PI/2 - 0.01, targetLat));
+    };
+
+    const onMouseUp = () => { isDragging = false; };
+    const onWheel = (e) => {
+        const delta = e.deltaY * 0.01;
+        const newRadius = THREE.MathUtils.clamp(radius + delta, 5, 50);
+        camera.position.setLength(newRadius);
+    };
+
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('wheel', onWheel, { passive: true });
+
+    // Resize handling
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Animation loop
+    const clock = new THREE.Clock();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+
+        // Smooth camera rotation
+        lon += (targetLon - lon) * 0.1;
+        lat += (targetLat - lat) * 0.1;
+
+        const camX = radius * Math.cos(lat) * Math.cos(lon);
+        const camY = radius * Math.sin(lat);
+        const camZ = radius * Math.cos(lat) * Math.sin(lon);
+        camera.position.set(camX, camY, camZ);
+        camera.lookAt(0, 0, 0);
+
+        // Rotate group slowly
+        group.rotation.y += delta * 0.2;
+        torus.rotation.x += delta * 0.3;
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+})();
+</script>
+</body>
+</html>
